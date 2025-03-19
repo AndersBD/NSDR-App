@@ -11,6 +11,11 @@ export default function WelcomePage() {
       <div className="w-full max-w-lg space-y-8">
         {/* App Logo */}
         <div className="text-center">
+          <img
+            src="/V1 - Symbol - OFFWHITE.webp"
+            alt="Trust Culture Logo"
+            className="h-32 w-32 mx-auto"
+          />
           <h1 className="text-4xl font-bold bg-gradient-to-br from-primary to-primary/80 bg-clip-text text-transparent">
             NSDR App
           </h1>
