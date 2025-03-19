@@ -22,7 +22,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  // Public route - Get all meditations
+  // Public routes - No authentication required
   app.get("/api/meditations", async (_req, res) => {
     try {
       const meditations = await storage.getMeditations();
@@ -32,14 +32,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Protected routes below this point
+  app.get("/api/meditations/:id", async (req, res) => {
+    try {
+      const meditation = await storage.getMeditation(parseInt(req.params.id));
+      if (!meditation) {
+        return res.status(404).json({ error: "Meditation not found" });
+      }
+      res.json(meditation);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch meditation" });
+    }
+  });
+
+  // Protected admin routes
   app.use(["/api/upload-url", "/api/meditations"], (req, res, next) => {
     if (req.method === "GET") return next();
     if (!req.isAuthenticated()) return res.sendStatus(401);
     next();
   });
 
-  // Upload meditation file
+  // Admin only routes
   app.post("/api/meditations", requireAdmin, async (req, res) => {
     try {
       const validation = insertMeditationSchema.safeParse(req.body);
@@ -54,7 +66,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete meditation
   app.delete("/api/meditations/:id", requireAdmin, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -65,7 +76,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get upload URL
   app.get("/api/upload-url", requireAdmin, async (req, res) => {
     try {
       const fileName = req.query.fileName as string;

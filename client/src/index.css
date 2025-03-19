@@ -3,6 +3,14 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-frame: 153 15% 26%; /* #384c44 */
+    --color-accent-1: 157 19% 61%; /* #86b5a2 */
+    --color-accent-2: 154 11% 44%; /* #667c73 */
+    --color-accent-3: 209 27% 28%; /* #354a5b */
+    --color-accent-4: 211 15% 48%; /* #667b8e */
+  }
+
   * {
     @apply border-border;
   }
@@ -13,9 +21,17 @@
 }
 
 .bg-gradient-primary {
-  @apply bg-gradient-to-br from-primary to-primary/80;
+  @apply bg-gradient-to-br from-[#384c44] to-[#667c73];
 }
 
 .text-gradient-primary {
   @apply bg-gradient-primary bg-clip-text text-transparent;
+}
+
+.btn-primary {
+  @apply bg-[#384c44] hover:bg-[#667c73] text-white transition-colors;
+}
+
+.btn-secondary {
+  @apply border-2 border-[#384c44] text-[#384c44] hover:bg-[#384c44] hover:text-white transition-colors;
 }

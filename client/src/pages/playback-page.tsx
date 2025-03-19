@@ -11,12 +11,12 @@ export default function PlaybackPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const audioRef = useRef<HTMLAudioElement>(null);
-  
+
   const { data: meditations } = useQuery<Meditation[]>({
     queryKey: ["/api/meditations"],
   });
-  
-  const meditation = meditations?.find(m => m.id === parseInt(id));
+
+  const meditation = meditations?.find(m => m.id === parseInt(id!));
 
   // Handle session completion
   useEffect(() => {
@@ -37,20 +37,20 @@ export default function PlaybackPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-lg space-y-6">
         <Button
           variant="ghost"
-          className="mb-4"
+          className="mb-4 text-[#384c44] hover:text-[#667c73]"
           onClick={() => setLocation("/")}
         >
           <ChevronLeft className="w-4 h-4 mr-2" />
           Afbryd session
         </Button>
 
-        <Card>
+        <Card className="border-2 border-[#384c44]">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">
+            <CardTitle className="text-2xl text-center text-[#384c44]">
               Afspiller...
             </CardTitle>
           </CardHeader>

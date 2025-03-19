@@ -52,7 +52,7 @@ export default function SessionListPage() {
                     <Button
                       key={meditation.id}
                       variant="outline"
-                      className="w-full h-16 justify-between"
+                      className="w-full h-16 justify-between border-2 border-[#384c44] text-[#384c44] hover:bg-[#384c44] hover:text-white"
                       onClick={() => setLocation(`/play/${meditation.id}`)}
                     >
                       <span className="text-lg">{meditation.title}</span>
