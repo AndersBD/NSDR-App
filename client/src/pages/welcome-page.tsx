@@ -7,10 +7,15 @@ export default function WelcomePage() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-lg space-y-8">
         {/* App Logo */}
         <div className="text-center">
+          <img
+            src="/Logo.webp"
+            alt="NSDR App Logo"
+            className="h-24 mx-auto mb-4"
+          />
           <h1 className="text-4xl font-bold bg-gradient-to-br from-primary to-primary/80 bg-clip-text text-transparent">
             NSDR App
           </h1>
