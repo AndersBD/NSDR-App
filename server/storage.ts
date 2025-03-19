@@ -53,6 +53,91 @@ export class MemStorage implements IStorage {
     };
     const user = await this.createUser(adminUser, true);
     console.log("Created default admin user:", user.username);
+
+    // Add sample meditation sessions
+    const sampleMeditations: InsertMeditation[] = [
+      // 10 minute sessions
+      {
+        title: "Hurtigt energiboost",
+        duration: 600, // 10 minutes in seconds
+        fileName: "energiboost.mp3",
+        fileUrl: "https://example.com/meditations/energiboost.mp3"
+      },
+      {
+        title: "Klarhed og fokus",
+        duration: 600,
+        fileName: "klarhed.mp3",
+        fileUrl: "https://example.com/meditations/klarhed.mp3"
+      },
+      {
+        title: "Mini mental genstart",
+        duration: 600,
+        fileName: "genstart.mp3",
+        fileUrl: "https://example.com/meditations/genstart.mp3"
+      },
+      // 20 minute sessions
+      {
+        title: "Kreativ mental nulstilling",
+        duration: 1200, // 20 minutes in seconds
+        fileName: "kreativ.mp3",
+        fileUrl: "https://example.com/meditations/kreativ.mp3"
+      },
+      {
+        title: "Stressreduktion",
+        duration: 1200,
+        fileName: "stress.mp3",
+        fileUrl: "https://example.com/meditations/stress.mp3"
+      },
+      {
+        title: "Klar til eksamen",
+        duration: 1200,
+        fileName: "eksamen.mp3",
+        fileUrl: "https://example.com/meditations/eksamen.mp3"
+      },
+      // 30 minute sessions
+      {
+        title: "Forbedret søvnkvalitet",
+        duration: 1800, // 30 minutes in seconds
+        fileName: "sovn.mp3",
+        fileUrl: "https://example.com/meditations/sovn.mp3"
+      },
+      {
+        title: "Dyb restitution efter træning",
+        duration: 1800,
+        fileName: "traning.mp3",
+        fileUrl: "https://example.com/meditations/traning.mp3"
+      },
+      {
+        title: "Aften-afslapning",
+        duration: 1800,
+        fileName: "aften.mp3",
+        fileUrl: "https://example.com/meditations/aften.mp3"
+      },
+      // 60 minute sessions
+      {
+        title: "Total mental genstart",
+        duration: 3600, // 60 minutes in seconds
+        fileName: "total.mp3",
+        fileUrl: "https://example.com/meditations/total.mp3"
+      },
+      {
+        title: "NSDR for optimal restitution",
+        duration: 3600,
+        fileName: "optimal.mp3",
+        fileUrl: "https://example.com/meditations/optimal.mp3"
+      },
+      {
+        title: "Intensiv mental restitution",
+        duration: 3600,
+        fileName: "intensiv.mp3",
+        fileUrl: "https://example.com/meditations/intensiv.mp3"
+      }
+    ];
+
+    // Create sample meditations
+    for (const meditation of sampleMeditations) {
+      await this.createMeditation(meditation);
+    }
   }
 
   async getUser(id: number): Promise<User | undefined> {
