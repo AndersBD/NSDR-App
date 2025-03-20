@@ -11,6 +11,13 @@ if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
+function getPublicUrl(fileName: string): string {
+  const { data } = supabase.storage
+    .from('lydfiler-til-nsdr')
+    .getPublicUrl(fileName);
+  return data.publicUrl;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
@@ -59,7 +66,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json(validation.error);
       }
 
-      const meditation = await storage.createMeditation(validation.data);
+      const meditationData = {
+        ...validation.data,
+        fileUrl: getPublicUrl(validation.data.fileName)
+      };
+      const meditation = await storage.createMeditation(meditationData);
       res.status(201).json(meditation);
     } catch (error) {
       res.status(500).json({ error: "Failed to create meditation" });
