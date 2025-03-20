@@ -84,7 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { data, error } = await supabase.storage
-        .from('meditations')
+        .from('lydfiler-til-nsdr')
         .createSignedUploadUrl(fileName);
 
       if (error) throw error;
