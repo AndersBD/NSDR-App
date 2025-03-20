@@ -15,16 +15,16 @@ export default function WelcomePage() {
           <img
             src="/logo.webp"
             alt="NSDR App Logo"
-            className="h-24 mx-auto mb-4 relative z-10"
+            className="h-24 mx-auto mb-8 relative z-10"
           />
-          <h1 className="text-4xl font-bold text-white relative z-10 mb-8">
+          <h1 className="text-4xl font-bold text-white relative z-10 mb-12">
             Mindful NSDR by TrustCulture
           </h1>
         </div>
 
         {/* Welcome Text */}
         <Card className="border-2 border-[#384c44]">
-          <CardContent className="p-6 pb-10">
+          <CardContent className="p-6">
             <h2 className="text-2xl font-semibold text-[#384c44] mb-4 text-center">Velkommen til NSDR App</h2>
             
             <div className="space-y-4 text-[#667c73]">
