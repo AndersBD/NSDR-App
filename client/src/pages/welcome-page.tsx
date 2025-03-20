@@ -11,13 +11,13 @@ export default function WelcomePage() {
       <div className="w-full max-w-lg space-y-8">
         {/* App Logo */}
         <div className="text-center relative">
-          <div className="absolute inset-0 bg-[#384c44] rounded-full transform -translate-y-4 scale-125 opacity-10" />
+          <div className="absolute inset-0 bg-primary rounded-full transform -translate-y-4 scale-125" />
           <img
             src="/logo.webp"
             alt="NSDR App Logo"
             className="h-24 mx-auto mb-4 relative z-10"
           />
-          <h1 className="text-4xl font-bold text-[#384c44]">
+          <h1 className="text-4xl font-bold text-white relative z-10">
             NSDR App
           </h1>
         </div>
