@@ -24,7 +24,7 @@ export default function WelcomePage() {
 
         {/* Welcome Text */}
         <Card className="border-2 border-[#384c44]">
-          <CardContent className="p-6">
+          <CardContent className="p-6 pb-10">
             <h2 className="text-2xl font-semibold text-[#384c44] mb-4 text-center">Velkommen til NSDR App</h2>
             
             <div className="space-y-4 text-[#667c73]">
