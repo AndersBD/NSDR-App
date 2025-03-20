@@ -60,39 +60,39 @@ export class MemStorage implements IStorage {
       {
         title: "Hurtigt energiboost",
         duration: 600, // 10 minutes in seconds
-        fileName: "energiboost.mp3",
-        fileUrl: "https://example.com/meditations/energiboost.mp3"
+        fileName: "10min.mp3",
+        fileUrl: "https://nsdrapp.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10min.mp3"
       },
       {
         title: "Klarhed og fokus",
         duration: 600,
-        fileName: "klarhed.mp3",
-        fileUrl: "https://example.com/meditations/klarhed.mp3"
+        fileName: "10min.mp3",
+        fileUrl: "https://nsdrapp.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10min.mp3"
       },
       {
         title: "Mini mental genstart",
         duration: 600,
-        fileName: "genstart.mp3",
-        fileUrl: "https://example.com/meditations/genstart.mp3"
+        fileName: "10min.mp3",
+        fileUrl: "https://nsdrapp.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10min.mp3"
       },
       // 20 minute sessions
       {
         title: "Kreativ mental nulstilling",
         duration: 1200, // 20 minutes in seconds
-        fileName: "kreativ.mp3",
-        fileUrl: "https://example.com/meditations/kreativ.mp3"
+        fileName: "20min.mp3",
+        fileUrl: "https://nsdrapp.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/20min.mp3"
       },
       {
         title: "Stressreduktion",
         duration: 1200,
-        fileName: "stress.mp3",
-        fileUrl: "https://example.com/meditations/stress.mp3"
+        fileName: "20min.mp3",
+        fileUrl: "https://nsdrapp.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/20min.mp3"
       },
       {
         title: "Klar til eksamen",
         duration: 1200,
-        fileName: "eksamen.mp3",
-        fileUrl: "https://example.com/meditations/eksamen.mp3"
+        fileName: "20min.mp3",
+        fileUrl: "https://nsdrapp.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/20min.mp3"
       },
       // 30 minute sessions
       {
