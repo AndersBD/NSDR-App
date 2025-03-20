@@ -10,14 +10,14 @@ export default function WelcomePage() {
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-3xl space-y-8">
         {/* App Logo */}
-        <div className="text-center relative">
-          <div className="absolute inset-0 bg-primary rounded-md transform -translate-y-6 scale-150" />
+        <div className="text-center relative p-8">
+          <div className="absolute inset-0 bg-primary rounded-lg" />
           <img
             src="/logo.webp"
             alt="NSDR App Logo"
             className="h-24 mx-auto mb-8 relative z-10"
           />
-          <h1 className="text-4xl font-bold text-white relative z-10 mb-12">
+          <h1 className="text-4xl font-bold text-white relative z-10 mb-4">
             Mindful NSDR by TrustCulture
           </h1>
         </div>
