@@ -5,12 +5,29 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft } from "lucide-react";
 import { AudioPlayer } from "@/components/audio-player";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+// Added Lottie animation component (replace with your actual Lottie implementation)
+const MindfulTransition = ({ onComplete }: { onComplete: () => void }) => {
+  useEffect(() => {
+    // Simulate a 2-second delay before redirecting. Replace with your Lottie animation logic.
+    const timer = setTimeout(onComplete, 2000);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-white">
+      {/* Replace this with your actual Lottie animation */}
+      <div>Mindful Transition Animation (Lottie)</div>
+    </div>
+  );
+};
+
 
 export default function PlaybackPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [showTransition, setShowTransition] = useState(false);
 
   const { data: meditations } = useQuery<Meditation[]>({
     queryKey: ["/api/meditations"],
@@ -24,8 +41,7 @@ export default function PlaybackPage() {
     if (!audio) return;
 
     const handleEnded = () => {
-      // Return to welcome page when session ends
-      setLocation("/");
+      setShowTransition(true);
     };
 
     audio.addEventListener("ended", handleEnded);
@@ -59,6 +75,9 @@ export default function PlaybackPage() {
           </CardContent>
         </Card>
       </div>
+      {showTransition && (
+        <MindfulTransition onComplete={() => setLocation("/")} />
+      )}
     </div>
   );
 }
