@@ -8,10 +8,10 @@ export default function DurationPage() {
   const { type } = useParams();
 
   const durations = [
-    { label: "10 min", value: 10, available: true },
-    { label: "20 min", value: 20, available: true },
-    { label: "30 min", value: 30, available: false },
-    { label: "1 time", value: 60, available: false },
+    { label: "10 min", value: 10 },
+    { label: "20 min", value: 20 },
+    { label: "30 min", value: 30 },
+    { label: "1 time", value: 60 }
   ];
 
   return (
@@ -31,17 +31,15 @@ export default function DurationPage() {
             <CardTitle className="text-2xl text-center">Vælg Varighed</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            {durations.map(({ label, value, available }) => (
+            {durations.map(({ label, value }) => (
               <Button
                 key={value}
                 size="lg"
-                className={`w-full h-16 text-lg ${!available ? 'opacity-50 blur-[1px] cursor-not-allowed' : ''}`}
-                onClick={() => available && setLocation(`/sessions/${type}/${value}`)}
-                disabled={!available}
+                className="w-full h-16 text-lg border-2 border-[#384c44] text-[#384c44] hover:bg-[#384c44] hover:text-white"
+                onClick={() => setLocation(`/sessions/${type}/${value}`)}
               >
                 <Clock className="w-5 h-5 mr-2" />
                 {label}
-                {!available && <span className="ml-2 text-sm">(Coming soon)</span>}
               </Button>
             ))}
           </CardContent>

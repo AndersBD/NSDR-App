@@ -20,7 +20,7 @@ export default function SessionListPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-lg space-y-6">
+      <div className="w-full max-w-3xl space-y-6">
         <Button
           variant="ghost"
           className="mb-4"
@@ -38,26 +38,36 @@ export default function SessionListPage() {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 {isLoading ? (
-                  <p className="text-center text-muted-foreground">
+                  <p className="text-center text-muted-foreground col-span-2">
                     Indlæser sessioner...
                   </p>
                 ) : filteredMeditations?.length === 0 ? (
-                  <p className="text-center text-muted-foreground">
+                  <p className="text-center text-muted-foreground col-span-2">
                     Ingen sessioner fundet for den valgte varighed
                   </p>
                 ) : (
                   filteredMeditations?.map((meditation) => (
-                    <Button
+                    <Card
                       key={meditation.id}
-                      variant="outline"
-                      className="w-full h-16 justify-between border-2 border-[#384c44] text-[#384c44] hover:bg-[#384c44] hover:text-white"
+                      className="overflow-hidden hover:border-[#384c44] transition-colors cursor-pointer"
                       onClick={() => setLocation(`/play/${meditation.id}`)}
                     >
-                      <span className="text-lg">{meditation.title}</span>
-                      <Play className="w-5 h-5" />
-                    </Button>
+                      <div className="aspect-video bg-[#384c44]/10 flex items-center justify-center">
+                        <img
+                          src={`https://api.dicebear.com/7.x/shapes/svg?seed=${meditation.title}`}
+                          alt={meditation.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <h3 className="font-medium text-[#384c44]">
+                          {meditation.title}
+                        </h3>
+                        <Play className="w-5 h-5 text-[#384c44]" />
+                      </CardContent>
+                    </Card>
                   ))
                 )}
               </div>
