@@ -18,6 +18,19 @@ function getPublicUrl(fileName: string): string {
   return data.publicUrl;
 }
 
+// Function to derive title from filename
+function deriveTitleFromFilename(fileName: string): string {
+  // Remove file extension
+  const nameWithoutExt = fileName.split('.').slice(0, -1).join('.');
+  // Replace hyphens and underscores with spaces
+  const nameWithSpaces = nameWithoutExt.replace(/[-_]/g, ' ');
+  // Capitalize first letter of each word
+  return nameWithSpaces
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
@@ -66,8 +79,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json(validation.error);
       }
 
+      // Derive title from filename if not provided
       const meditationData = {
         ...validation.data,
+        title: validation.data.title || deriveTitleFromFilename(validation.data.fileName),
         fileUrl: getPublicUrl(validation.data.fileName)
       };
       const meditation = await storage.createMeditation(meditationData);
