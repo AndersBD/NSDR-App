@@ -1,8 +1,7 @@
-
 import { useEffect } from 'react';
 import Lottie from 'lottie-react';
 import { cn } from '@/lib/utils';
-import meditationAnimation from '../assets/meditation-animation.json';
+import meditationAnimation from '@/assets/meditation-animation.json';
 
 interface MindfulTransitionProps {
   onComplete?: () => void;

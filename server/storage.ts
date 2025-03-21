@@ -61,77 +61,20 @@ export class MemStorage implements IStorage {
         title: "Hurtigt energiboost",
         duration: 600, // 10 minutes in seconds
         fileName: "10 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr//10%20minutes.mp3"
+        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
       },
       {
         title: "Klarhed og fokus",
         duration: 600,
         fileName: "10 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr//10%20minutes.mp3"
+        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
       },
       {
         title: "Mini mental genstart",
         duration: 600,
         fileName: "10 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr//10%20minutes.mp3"
+        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
       },
-      // 20 minute sessions
-      {
-        title: "Kreativ mental nulstilling",
-        duration: 1200, // 20 minutes in seconds
-        fileName: "20 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr//20%20minutes.mp3"
-      },
-      {
-        title: "Stressreduktion",
-        duration: 1200,
-        fileName: "20 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr//20%20minutes.mp3"
-      },
-      {
-        title: "Klar til eksamen",
-        duration: 1200,
-        fileName: "20 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr//20%20minutes.mp3"
-      },
-      // 30 minute sessions
-      {
-        title: "Forbedret søvnkvalitet",
-        duration: 1800, // 30 minutes in seconds
-        fileName: "sovn.mp3",
-        fileUrl: "https://example.com/meditations/sovn.mp3"
-      },
-      {
-        title: "Dyb restitution efter træning",
-        duration: 1800,
-        fileName: "traning.mp3",
-        fileUrl: "https://example.com/meditations/traning.mp3"
-      },
-      {
-        title: "Aften-afslapning",
-        duration: 1800,
-        fileName: "aften.mp3",
-        fileUrl: "https://example.com/meditations/aften.mp3"
-      },
-      // 60 minute sessions
-      {
-        title: "Total mental genstart",
-        duration: 3600, // 60 minutes in seconds
-        fileName: "total.mp3",
-        fileUrl: "https://example.com/meditations/total.mp3"
-      },
-      {
-        title: "NSDR for optimal restitution",
-        duration: 3600,
-        fileName: "optimal.mp3",
-        fileUrl: "https://example.com/meditations/optimal.mp3"
-      },
-      {
-        title: "Intensiv mental restitution",
-        duration: 3600,
-        fileName: "intensiv.mp3",
-        fileUrl: "https://example.com/meditations/intensiv.mp3"
-      }
     ];
 
     // Create sample meditations
