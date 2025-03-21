@@ -1,8 +1,10 @@
 
 {
   "name": "dark",
+  "variant": "professional",
+  "primary": "#0097FB",
+  "appearance": "dark",
   "colors": {
-    "primary": "#0097FB",
     "secondary": "#666666",
     "background": "#1a1a1a",
     "foreground": "#ffffff",
