@@ -18,6 +18,14 @@ export const meditations = pgTable("meditations", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const feedback = pgTable("feedback", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  meditationId: integer("meditation_id").references(() => meditations.id),
+  wellbeingChange: integer("wellbeing_change").notNull(), // -2 to 2
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -30,7 +38,14 @@ export const insertMeditationSchema = createInsertSchema(meditations).pick({
   fileUrl: true,
 });
 
+export const insertFeedbackSchema = createInsertSchema(feedback).pick({
+  meditationId: true,
+  wellbeingChange: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Meditation = typeof meditations.$inferSelect;
 export type InsertMeditation = z.infer<typeof insertMeditationSchema>;
+export type Feedback = typeof feedback.$inferSelect;
+export type InsertFeedback = z.infer<typeof insertFeedbackSchema>;

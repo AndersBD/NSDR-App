@@ -1,4 +1,4 @@
-import { User, InsertUser, Meditation, InsertMeditation } from "@shared/schema";
+import { User, InsertUser, Meditation, InsertMeditation, Feedback, InsertFeedback } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes } from "crypto";
@@ -23,21 +23,27 @@ export interface IStorage {
   createMeditation(meditation: InsertMeditation): Promise<Meditation>;
   deleteMeditation(id: number): Promise<void>;
 
+  createFeedback(feedback: InsertFeedback & { userId: number }): Promise<Feedback>;
+
   sessionStore: session.Store;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private meditations: Map<number, Meditation>;
+  private feedback: Map<number, Feedback>;
   private currentUserId: number;
   private currentMeditationId: number;
+  private currentFeedbackId: number;
   sessionStore: session.Store;
 
   constructor() {
     this.users = new Map();
     this.meditations = new Map();
+    this.feedback = new Map();
     this.currentUserId = 1;
     this.currentMeditationId = 1;
+    this.currentFeedbackId = 1;
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
@@ -121,6 +127,17 @@ export class MemStorage implements IStorage {
 
   async deleteMeditation(id: number): Promise<void> {
     this.meditations.delete(id);
+  }
+
+  async createFeedback(feedback: InsertFeedback & { userId: number }): Promise<Feedback> {
+    const id = this.currentFeedbackId++;
+    const newFeedback: Feedback = {
+      ...feedback,
+      id,
+      createdAt: new Date(),
+    };
+    this.feedback.set(id, newFeedback);
+    return newFeedback;
   }
 }
 
