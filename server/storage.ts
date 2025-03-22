@@ -14,26 +14,39 @@ if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-function getPublicUrl(fileName: string): string {
+function getPublicUrl(fileName: string, folder: string): string {
   const { data } = supabase.storage
     .from('lydfiler-til-nsdr')
-    .getPublicUrl(fileName);
+    .getPublicUrl(`${folder}/${fileName}`);
   return data.publicUrl;
 }
 
 async function fetchAudioFiles() {
-  const { data, error } = await supabase
-    .storage
-    .from('lydfiler-til-nsdr')
-    .list('');
-  if (error) {
-    console.error("Error fetching audio files:", error);
-    return [];
+  const durations = ['10-minutter', '20-minutter', '30-minutter', '60-minutter'];
+  let allFiles = [];
+
+  for (const duration of durations) {
+    const { data, error } = await supabase.storage
+      .from('lydfiler-til-nsdr')
+      .list(duration);
+
+    if (error) {
+      console.error(`Error fetching ${duration} files:`, error);
+      continue;
+    }
+
+    const durationInMinutes = parseInt(duration.replace('-minutter', ''));
+    const files = data.map(file => ({
+      fileName: file.name,
+      fileUrl: getPublicUrl(file.name, duration),
+      duration: durationInMinutes * 60, // Convert minutes to seconds
+      folder: duration
+    }));
+
+    allFiles = [...allFiles, ...files];
   }
-  return data.map(file => ({
-    fileName: file.name,
-    fileUrl: getPublicUrl(file.name)
-  }));
+
+  return allFiles;
 }
 
 async function hashPassword(password: string) {
@@ -95,8 +108,8 @@ export class MemStorage implements IStorage {
       title: audio.fileName.replace('.mp3', '').split(' ').map(word => 
         word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
       ).join(' '),
-      duration: parseInt(audio.fileName.split(' ')[0]) * 60 || 600, // Extract duration from filename or default to 10 minutes
-      fileName: audio.fileName,
+      duration: audio.duration,
+      fileName: `${audio.folder}/${audio.fileName}`,
       fileUrl: audio.fileUrl,
     }));
 

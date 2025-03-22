@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { InsertFeedback } from "@shared/schema";
+import { Loader2 } from "lucide-react";
 
 interface FeedbackFormProps {
   meditationId: number;
@@ -53,6 +54,9 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
                 onClick={() => feedbackMutation.mutate(option.value)}
                 disabled={feedbackMutation.isPending}
               >
+                {feedbackMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
                 {option.label}
               </Button>
             ))}
