@@ -55,3 +55,24 @@ export const queryClient = new QueryClient({
     },
   },
 });
+import { QueryClient } from "@tanstack/react-query";
+
+export const queryClient = new QueryClient();
+
+export async function apiRequest(
+  method: string,
+  path: string,
+  body?: any,
+  options: RequestInit = {}
+) {
+  const res = await fetch(path, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: 'include',
+    ...options
+  });
+  return res;
+}
