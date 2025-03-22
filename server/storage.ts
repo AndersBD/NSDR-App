@@ -58,22 +58,22 @@ export class MemStorage implements IStorage {
     const sampleMeditations: InsertMeditation[] = [
       // 10 minute sessions
       {
-        title: "Hurtigt energiboost",
+        title: "10 minutes",
         duration: 600, // 10 minutes in seconds
-        fileName: "10 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
+        fileName: "10min-meditation.mp3",
+        fileUrl: "https://assets.mixkit.co/music/preview/mixkit-meditation-spiritual-flute-427.mp3"
       },
       {
-        title: "Klarhed og fokus",
-        duration: 600,
-        fileName: "10 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
+        title: "5 minutes",
+        duration: 300,
+        fileName: "5min-meditation.mp3",
+        fileUrl: "https://assets.mixkit.co/music/preview/mixkit-meditative-morning-368.mp3"
       },
       {
-        title: "Mini mental genstart",
-        duration: 600,
-        fileName: "10 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
+        title: "3 minutes",
+        duration: 180,
+        fileName: "3min-meditation.mp3",
+        fileUrl: "https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3"
       },
     ];
 
