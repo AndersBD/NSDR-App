@@ -41,6 +41,8 @@ export const insertMeditationSchema = createInsertSchema(meditations).pick({
 export const insertFeedbackSchema = createInsertSchema(feedback).pick({
   meditationId: true,
   wellbeingChange: true,
+}).extend({
+  wellbeingChange: z.number().min(-2).max(2)
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;

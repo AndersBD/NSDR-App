@@ -5,6 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/use-auth";
 import { InsertFeedback } from "@shared/schema";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface FeedbackFormProps {
   meditationId: number;
@@ -21,6 +22,7 @@ const WELLBEING_OPTIONS = [
 
 export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const feedbackMutation = useMutation({
     mutationFn: async (wellbeingChange: number) => {
@@ -30,12 +32,20 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
       };
       const res = await apiRequest("POST", "/api/feedback", feedback);
       if (!res.ok) {
-        throw new Error("Failed to submit feedback");
+        const error = await res.json();
+        throw new Error(error.message || "Failed to submit feedback");
       }
       return res.json();
     },
     onSuccess: () => {
       onComplete();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
