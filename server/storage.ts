@@ -22,7 +22,7 @@ function getPublicUrl(fileName: string, folder: string): string {
 }
 
 async function fetchAudioFiles() {
-  const durations = ['10-minutter', '20-minutter', '30-minutter', '60-minutter'];
+  const durations = ['10 minutter', '20 minutter', '30 minutter', '60 minutter'];
   let allFiles = [];
 
   for (const duration of durations) {
@@ -35,7 +35,7 @@ async function fetchAudioFiles() {
       continue;
     }
 
-    const durationInMinutes = parseInt(duration.replace('-minutter', ''));
+    const durationInMinutes = parseInt(duration.split(' ')[0]);
     const files = data.map(file => ({
       fileName: file.name,
       fileUrl: getPublicUrl(file.name, duration),
