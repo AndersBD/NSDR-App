@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertMeditationSchema, insertFeedbackSchema } from "@shared/schema";
+import { insertMeditationSchema } from "@shared/schema";
 import { createClient } from "@supabase/supabase-js";
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
@@ -41,29 +41,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   };
-
-  // Add feedback endpoint
-  app.post("/api/feedback", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Authentication required");
-    }
-
-    try {
-      const validation = insertFeedbackSchema.safeParse(req.body);
-      if (!validation.success) {
-        return res.status(400).json(validation.error);
-      }
-
-      const feedback = await storage.createFeedback({
-        ...validation.data,
-        userId: req.user.id,
-      });
-
-      res.status(201).json(feedback);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to save feedback" });
-    }
-  });
 
   // Public routes - No authentication required
   app.get("/api/meditations", async (_req, res) => {

@@ -1,6 +1,4 @@
-import { User, InsertUser, Meditation, InsertMeditation, Feedback, InsertFeedback } from "@shared/schema";
-import { db, users, meditations, feedback } from "./db";
-import { eq } from "drizzle-orm";
+import { User, InsertUser, Meditation, InsertMeditation } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes } from "crypto";
@@ -18,41 +16,47 @@ async function hashPassword(password: string) {
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser, isAdmin?: boolean): Promise<User>;
+  createUser(user: InsertUser): Promise<User>;
 
   getMeditations(): Promise<Meditation[]>;
   getMeditation(id: number): Promise<Meditation | undefined>;
   createMeditation(meditation: InsertMeditation): Promise<Meditation>;
   deleteMeditation(id: number): Promise<void>;
 
-  createFeedback(feedback: InsertFeedback & { userId: number }): Promise<Feedback>;
-
   sessionStore: session.Store;
 }
 
-export class DatabaseStorage implements IStorage {
+export class MemStorage implements IStorage {
+  private users: Map<number, User>;
+  private meditations: Map<number, Meditation>;
+  private currentUserId: number;
+  private currentMeditationId: number;
   sessionStore: session.Store;
 
   constructor() {
+    this.users = new Map();
+    this.meditations = new Map();
+    this.currentUserId = 1;
+    this.currentMeditationId = 1;
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
     });
+
+    // Create default admin user
     this.createDefaultAdmin();
   }
 
   private async createDefaultAdmin() {
-    const existingAdmin = await this.getUserByUsername("admin");
-    if (existingAdmin) return;
-
     const adminUser: InsertUser = {
       username: "admin",
-      password: await hashPassword("admin"),
+      password: await hashPassword("admin"), // Default password: admin
     };
     const user = await this.createUser(adminUser, true);
     console.log("Created default admin user:", user.username);
 
     // Add sample meditation sessions
     const sampleMeditations: InsertMeditation[] = [
+      // 10 minute sessions
       {
         title: "Hurtigt energiboost",
         duration: 600, // 10 minutes in seconds
@@ -70,7 +74,7 @@ export class DatabaseStorage implements IStorage {
         duration: 600,
         fileName: "10 minutes.mp3",
         fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
-      }
+      },
     ];
 
     // Create sample meditations
@@ -80,42 +84,44 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    return user;
+    return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
-    return user;
+    return Array.from(this.users.values()).find(
+      (user) => user.username === username,
+    );
   }
 
   async createUser(insertUser: InsertUser, isAdmin = false): Promise<User> {
-    const [user] = await db.insert(users).values({ ...insertUser, isAdmin }).returning();
+    const id = this.currentUserId++;
+    const user: User = { ...insertUser, id, isAdmin };
+    this.users.set(id, user);
     return user;
   }
 
   async getMeditations(): Promise<Meditation[]> {
-    return await db.select().from(meditations);
+    return Array.from(this.meditations.values());
   }
 
   async getMeditation(id: number): Promise<Meditation | undefined> {
-    const [meditation] = await db.select().from(meditations).where(eq(meditations.id, id)).limit(1);
-    return meditation;
+    return this.meditations.get(id);
   }
 
   async createMeditation(meditation: InsertMeditation): Promise<Meditation> {
-    const [newMeditation] = await db.insert(meditations).values(meditation).returning();
+    const id = this.currentMeditationId++;
+    const newMeditation: Meditation = {
+      ...meditation,
+      id,
+      createdAt: new Date(),
+    };
+    this.meditations.set(id, newMeditation);
     return newMeditation;
   }
 
   async deleteMeditation(id: number): Promise<void> {
-    await db.delete(meditations).where(eq(meditations.id, id));
-  }
-
-  async createFeedback(feedback: InsertFeedback & { userId: number }): Promise<Feedback> {
-    const [newFeedback] = await db.insert(feedback).values(feedback).returning();
-    return newFeedback;
+    this.meditations.delete(id);
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
