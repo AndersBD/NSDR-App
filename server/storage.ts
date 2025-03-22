@@ -60,20 +60,20 @@ export class MemStorage implements IStorage {
       {
         title: "10 minutes",
         duration: 600, // 10 minutes in seconds
-        fileName: "10min-meditation.mp3",
-        fileUrl: "https://assets.mixkit.co/music/preview/mixkit-meditation-spiritual-flute-427.mp3"
+        fileName: "10 minutes.mp3",
+        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/meditation-audio/10minutes.mp3"
       },
       {
         title: "5 minutes",
         duration: 300,
-        fileName: "5min-meditation.mp3",
-        fileUrl: "https://assets.mixkit.co/music/preview/mixkit-meditative-morning-368.mp3"
+        fileName: "5 minutes.mp3",
+        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/meditation-audio/5minutes.mp3"
       },
       {
         title: "3 minutes",
         duration: 180,
-        fileName: "3min-meditation.mp3",
-        fileUrl: "https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3"
+        fileName: "3 minutes.mp3",
+        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/meditation-audio/3minutes.mp3"
       },
     ];
 
