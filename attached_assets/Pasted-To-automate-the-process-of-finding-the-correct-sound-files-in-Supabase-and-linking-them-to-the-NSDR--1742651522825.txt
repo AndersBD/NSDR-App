@@ -1,0 +1,56 @@
+To automate the process of finding the correct sound files in Supabase and linking them to the NSDR sessions with the same names as the sound files, you can modify the server/storage.ts file to fetch the sound files from Supabase directly and update your sample meditations accordingly.
+
+Here’s a complete approach:
+
+Fetch sound files from Supabase.
+Create sample meditation sessions with the correct URLs and names.
+Here's how to achieve this in your server/storage.ts file:
+
+import { createClient } from "@supabase/supabase-js";
+// Supabase client initialization
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+// Function to fetch audio files from Supabase
+async function fetchAudioFiles() {
+  const { data, error } = await supabase
+    .storage
+    .from('lydfiler-til-nsdr')
+    .list('');
+  if (error) {
+    console.error("Error fetching audio files:", error);
+    return [];
+  }
+  return data.map(file => ({
+    fileName: file.name,
+    fileUrl: getPublicUrl(file.name)
+  }));
+}
+// Function to get the public URL of a file
+function getPublicUrl(fileName: string) {
+  const { data } = supabase.storage.from('lydfiler-til-nsdr').getPublicUrl(fileName);
+  return data.publicUrl;
+}
+// Create sample meditation sessions
+async function createSampleMeditations() {
+  const audioFiles = await fetchAudioFiles();
+  const sampleMeditations: InsertMeditation[] = audioFiles.map(audio => ({
+    title: audio.fileName.replace('.mp3', ''), // Remove file extension for title
+    duration: 600, // You can set this based on your needs
+    fileName: audio.fileName,
+    fileUrl: audio.fileUrl,
+  }));
+  // Create sample meditations
+  for (const meditation of sampleMeditations) {
+    await this.createMeditation(meditation);
+  }
+}
+// Call the createSampleMeditations function
+createSampleMeditations().catch(console.error);
+Explanation:
+Supabase Client Initialization: It sets up the connection to Supabase using environment variables for the URL and API key.
+fetchAudioFiles Function: This function fetches all audio files from the lydfiler-til-nsdr bucket and prepares the file names and public URLs.
+getPublicUrl Function: This creates the public URL for each file in the Supabase storage.
+createSampleMeditations Function: This function generates meditation sessions using the retrieved audio files, renaming each session based on the audio file name.
+Function Invocation: The createSampleMeditations function is called to execute the process.
+Before running this code, ensure that your Supabase credentials are set correctly in your environment variables.
+
+You can instruct your agent to implement this logic to ensure that audio files are dynamically fetched and linked with the correct names in your application.

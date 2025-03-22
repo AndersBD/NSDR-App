@@ -3,9 +3,38 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
+import { createClient } from "@supabase/supabase-js";
 
 const MemoryStore = createMemoryStore(session);
 const scryptAsync = promisify(scrypt);
+
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+  throw new Error("Missing Supabase credentials");
+}
+
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+function getPublicUrl(fileName: string): string {
+  const { data } = supabase.storage
+    .from('lydfiler-til-nsdr')
+    .getPublicUrl(fileName);
+  return data.publicUrl;
+}
+
+async function fetchAudioFiles() {
+  const { data, error } = await supabase
+    .storage
+    .from('lydfiler-til-nsdr')
+    .list('');
+  if (error) {
+    console.error("Error fetching audio files:", error);
+    return [];
+  }
+  return data.map(file => ({
+    fileName: file.name,
+    fileUrl: getPublicUrl(file.name)
+  }));
+}
 
 async function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
@@ -60,28 +89,16 @@ export class MemStorage implements IStorage {
     const user = await this.createUser(adminUser, true);
     console.log("Created default admin user:", user.username);
 
-    // Add sample meditation sessions
-    const sampleMeditations: InsertMeditation[] = [
-      // 10 minute sessions
-      {
-        title: "Hurtigt energiboost",
-        duration: 600, // 10 minutes in seconds
-        fileName: "10 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
-      },
-      {
-        title: "Klarhed og fokus",
-        duration: 600,
-        fileName: "10 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
-      },
-      {
-        title: "Mini mental genstart",
-        duration: 600,
-        fileName: "10 minutes.mp3",
-        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
-      },
-    ];
+    // Create sample meditations from Supabase files
+    const audioFiles = await fetchAudioFiles();
+    const sampleMeditations: InsertMeditation[] = audioFiles.map(audio => ({
+      title: audio.fileName.replace('.mp3', '').split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      ).join(' '),
+      duration: parseInt(audio.fileName.split(' ')[0]) * 60 || 600, // Extract duration from filename or default to 10 minutes
+      fileName: audio.fileName,
+      fileUrl: audio.fileUrl,
+    }));
 
     // Create sample meditations
     for (const meditation of sampleMeditations) {
