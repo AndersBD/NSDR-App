@@ -56,25 +56,25 @@ export class MemStorage implements IStorage {
 
     // Add sample meditation sessions
     const sampleMeditations: InsertMeditation[] = [
-        // 10 minute sessions
-        {
-          title: "10 minutes",
-          duration: 600, // 10 minutes in seconds
-          fileName: "10 minutes.mp3",
-          fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
-        },
-        {
-          title: "10 minutes",
-          duration: 600,
-          fileName: "10 minutes.mp3",
-          fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
-        },
-        {
-          title: "10 minutes",
-          duration: 600,
-          fileName: "10 minutes.mp3",
-          fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
-        },
+      // 10 minute sessions
+      {
+        title: "Hurtigt energiboost",
+        duration: 600, // 10 minutes in seconds
+        fileName: "10 minutes.mp3",
+        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
+      },
+      {
+        title: "Klarhed og fokus",
+        duration: 600,
+        fileName: "10 minutes.mp3",
+        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
+      },
+      {
+        title: "Mini mental genstart",
+        duration: 600,
+        fileName: "10 minutes.mp3",
+        fileUrl: "https://fnhfpyqwzugmljhgxlfd.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutes.mp3"
+      },
     ];
 
     // Create sample meditations
