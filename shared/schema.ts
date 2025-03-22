@@ -1,3 +1,4 @@
+
 import { pgTable, text, serial, integer, boolean, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -12,7 +13,7 @@ export const users = pgTable("users", {
 export const meditations = pgTable("meditations", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
-  duration: integer("duration").notNull(), // in seconds
+  duration: integer("duration").notNull(),
   fileName: text("file_name").notNull(),
   fileUrl: text("file_url").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -26,18 +27,8 @@ export const feedback = pgTable("feedback", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
-export const insertMeditationSchema = createInsertSchema(meditations).pick({
-  title: true,
-  duration: true,
-  fileName: true,
-  fileUrl: true,
-});
-
+export const insertUserSchema = createInsertSchema(users);
+export const insertMeditationSchema = createInsertSchema(meditations);
 export const insertFeedbackSchema = createInsertSchema(feedback)
   .pick({
     meditationId: true,
