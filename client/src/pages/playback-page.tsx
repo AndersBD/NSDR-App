@@ -7,7 +7,20 @@ import { ChevronLeft } from "lucide-react";
 import { AudioPlayer } from "@/components/audio-player";
 import { useEffect, useRef, useState } from "react";
 
-import { MindfulTransition } from "@/components/mindful-transition";
+// Added Lottie animation component (replace with your actual Lottie implementation)
+const MindfulTransition = ({ onComplete }: { onComplete: () => void }) => {
+  useEffect(() => {
+    // Simulate a 2-second delay before redirecting. Replace with your Lottie animation logic.
+    const timer = setTimeout(onComplete, 2000);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-white">
+      {/* Replace this with your actual Lottie animation */}
+      <div>Mindful Transition Animation (Lottie)</div>
+    </div>
+  );
+};
 
 
 export default function PlaybackPage() {
