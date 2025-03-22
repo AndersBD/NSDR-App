@@ -29,6 +29,9 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
         wellbeingChange,
       };
       const res = await apiRequest("POST", "/api/feedback", feedback);
+      if (!res.ok) {
+        throw new Error("Failed to submit feedback");
+      }
       return res.json();
     },
     onSuccess: () => {
