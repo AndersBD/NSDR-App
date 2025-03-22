@@ -31,7 +31,9 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
         wellbeingChange,
       };
       const res = await apiRequest("POST", "/api/feedback", feedback, {
-        credentials: 'include'
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
       if (!res.ok) {
         const error = await res.json();

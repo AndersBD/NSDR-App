@@ -55,6 +55,7 @@ async function hashPassword(password: string) {
   return `${buf.toString("hex")}.${salt}`;
 }
 
+// Update the IStorage interface
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -65,7 +66,7 @@ export interface IStorage {
   createMeditation(meditation: InsertMeditation): Promise<Meditation>;
   deleteMeditation(id: number): Promise<void>;
 
-  createFeedback(feedback: InsertFeedback & { userId: number }): Promise<Feedback>;
+  createFeedback(feedback: Omit<InsertFeedback & { userId?: number }, "id">): Promise<Feedback>;
 
   sessionStore: session.Store;
 }
@@ -105,7 +106,7 @@ export class MemStorage implements IStorage {
     // Create sample meditations from Supabase files
     const audioFiles = await fetchAudioFiles();
     const sampleMeditations: InsertMeditation[] = audioFiles.map(audio => ({
-      title: audio.fileName.replace('.mp3', '').split(' ').map(word => 
+      title: audio.fileName.replace('.mp3', '').split(' ').map(word =>
         word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
       ).join(' '),
       duration: audio.duration,
@@ -159,7 +160,8 @@ export class MemStorage implements IStorage {
     this.meditations.delete(id);
   }
 
-  async createFeedback(feedback: InsertFeedback & { userId: number }): Promise<Feedback> {
+  // Update the createFeedback implementation
+  async createFeedback(feedback: Omit<InsertFeedback & { userId?: number }, "id">): Promise<Feedback> {
     const id = this.currentFeedbackId++;
     const newFeedback: Feedback = {
       ...feedback,

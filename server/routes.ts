@@ -44,10 +44,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Add feedback endpoint
   app.post("/api/feedback", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).send("Authentication required");
-    }
-
     try {
       const validation = insertFeedbackSchema.safeParse(req.body);
       if (!validation.success) {
@@ -56,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const feedback = await storage.createFeedback({
         ...validation.data,
-        userId: req.user.id,
+        userId: req.isAuthenticated() ? req.user.id : undefined,
       });
 
       res.status(201).json(feedback);
