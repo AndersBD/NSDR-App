@@ -108,6 +108,8 @@ export async function signOut() {
 // Helper function for file uploads
 export async function uploadFile(file: File, folder: string) {
   try {
+    console.log('Attempting upload to folder:', folder); // Debug log
+
     const { data, error } = await supabase.storage
       .from('lydfiler-til-nsdr')
       .upload(`${folder}/${file.name}`, file, {
@@ -117,16 +119,25 @@ export async function uploadFile(file: File, folder: string) {
 
     if (error) {
       console.error('Storage upload error:', error);
+      if (error.message.includes('row-level security policy')) {
+        throw new Error('Storage permissions not configured. Please check Supabase storage bucket policies.');
+      }
+      if (error.message.includes('duplicate')) {
+        throw new Error('A file with this name already exists. Please rename the file or use a different one.');
+      }
+      if (error.message.includes('permission')) {
+        throw new Error('Storage permission denied. Please check bucket permissions in Supabase.');
+      }
       throw error;
     }
 
     // Get the public URL
     const { data: urlData } = await supabase.storage
       .from('lydfiler-til-nsdr')
-      .getPublicUrl(`${folder}/${file.name}`); //await added here
+      .getPublicUrl(`${folder}/${file.name}`);
 
     if (!urlData?.publicUrl) {
-      throw new Error('Failed to get public URL');
+      throw new Error('Failed to get public URL for the uploaded file');
     }
 
     return {
@@ -135,6 +146,6 @@ export async function uploadFile(file: File, folder: string) {
     };
   } catch (error: any) {
     console.error('Upload error:', error);
-    throw new Error(`Upload failed: ${error.message}`);
+    throw new Error(error.message || 'Upload failed. Please try again.');
   }
 }
