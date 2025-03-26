@@ -33,7 +33,7 @@ alter table public.feedback drop column if exists user_id;
 drop policy if exists "Users can create feedback" on public.feedback;
 drop policy if exists "Users can view own feedback" on public.feedback;
 
--- Create new anonymous feedback policy
+-- Feedback policies - allow anonymous submissions
 create policy if not exists "Anyone can submit feedback"
 on public.feedback
 for insert
@@ -48,3 +48,9 @@ create index if not exists feedback_meditation_id_idx on public.feedback(meditat
 
 -- Create indexes for better query performance
 create index meditations_created_at_idx on public.meditations(created_at desc);
+
+-- Insert sample meditation data
+INSERT INTO public.meditations (title, duration, file_name, file_url) VALUES
+('10 Minute Meditation', 600, '10 minutter/meditation_10min.mp3', 'https://your-bucket.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/10%20minutter/meditation_10min.mp3'),
+('20 Minute Meditation', 1200, '20 minutter/meditation_20min.mp3', 'https://your-bucket.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/20%20minutter/meditation_20min.mp3'),
+('30 Minute Meditation', 1800, '30 minutter/meditation_30min.mp3', 'https://your-bucket.supabase.co/storage/v1/object/public/lydfiler-til-nsdr/30%20minutter/meditation_30min.mp3');
