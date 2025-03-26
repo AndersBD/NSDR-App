@@ -1,10 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/types/supabase';
 import env from './env-config';
+import { Database } from '@/types/supabase'; //Retained from original
 
 export const supabase = createClient<Database>(
   env.SUPABASE_URL,
-  env.SUPABASE_KEY
+  env.SUPABASE_KEY,
+  {
+    auth: {
+      persistSession: false // Since we're using our own auth system
+    }
+  }
 );
 
 // Database types
@@ -98,4 +103,38 @@ export async function signUp(email: string, password: string) {
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
+}
+
+// Helper function for file uploads
+export async function uploadFile(file: File, folder: string) {
+  try {
+    const { data, error } = await supabase.storage
+      .from('lydfiler-til-nsdr')
+      .upload(`${folder}/${file.name}`, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Storage upload error:', error);
+      throw error;
+    }
+
+    // Get the public URL
+    const { data: urlData } = await supabase.storage
+      .from('lydfiler-til-nsdr')
+      .getPublicUrl(`${folder}/${file.name}`); //await added here
+
+    if (!urlData?.publicUrl) {
+      throw new Error('Failed to get public URL');
+    }
+
+    return {
+      path: `${folder}/${file.name}`,
+      url: urlData.publicUrl
+    };
+  } catch (error: any) {
+    console.error('Upload error:', error);
+    throw new Error(`Upload failed: ${error.message}`);
+  }
 }

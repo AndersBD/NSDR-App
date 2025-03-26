@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { Loader2, Upload, CheckCircle2, XCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { uploadFile } from '@/lib/supabase';
 import { Progress } from '@/components/ui/progress';
 
 export function FileUpload() {
@@ -71,21 +71,24 @@ export function FileUpload() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    console.log('Selected file:', file.name); // Debug log
+
     setSelectedFile(file);
     setUploadStatus('idle');
     setUploadProgress(0);
 
-    // Extract duration from filename (e.g., "20 min.wav" or "20min.mp3")
+    // Extract duration from filename
     const durationMatch = file.name.match(/(\d+)\s*min/i);
     if (durationMatch) {
       const durationMinutes = parseInt(durationMatch[1]);
       const folder = `${durationMinutes} minutter`;
+      console.log('Detected folder:', folder); // Debug log
       setTargetFolder(folder);
     } else {
       setTargetFolder(null);
       toast({
         title: 'Warning',
-        description: 'Filename must include duration (e.g., "meditation-20min.wav" or "NSDR 20 min.mp3")',
+        description: 'Filename must include duration (e.g., "NSDR 20 min.wav")',
         variant: 'destructive',
       });
     }
@@ -103,45 +106,31 @@ export function FileUpload() {
 
       const durationMatch = selectedFile.name.match(/(\d+)\s*min/i);
       if (!durationMatch) {
-        throw new Error('Filename must include duration (e.g., "meditation-20min.wav" or "NSDR 20 min.mp3")');
+        throw new Error('Filename must include duration (e.g., "NSDR 20 min.wav")');
       }
 
       const durationMinutes = parseInt(durationMatch[1]);
 
       setUploadProgress(30);
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('lydfiler-til-nsdr')
-        .upload(`${targetFolder}/${selectedFile.name}`, selectedFile, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      console.log('Starting upload to folder:', targetFolder); // Debug log
 
-      if (uploadError) {
-        throw new Error(`Upload failed: ${uploadError.message}`);
-      }
+      const uploadResult = await uploadFile(selectedFile, targetFolder);
 
       setUploadProgress(70);
 
-      const { data: urlData } = supabase.storage
-        .from('lydfiler-til-nsdr')
-        .getPublicUrl(`${targetFolder}/${selectedFile.name}`);
-
-      if (!urlData?.publicUrl) {
-        throw new Error('Failed to get public URL for uploaded file');
-      }
-
-      setUploadProgress(90);
+      console.log('Upload successful:', uploadResult); // Debug log
 
       await createMutation.mutateAsync({
         title: formData.title || selectedFile.name.replace(/\.\w+$/, ''),
         duration: durationMinutes * 60,
-        fileName: `${targetFolder}/${selectedFile.name}`,
-        fileUrl: urlData.publicUrl,
+        fileName: uploadResult.path,
+        fileUrl: uploadResult.url,
       });
 
       setUploadProgress(100);
     } catch (error: any) {
+      console.error('Upload error:', error); // Debug log
       setUploadStatus('error');
       toast({
         title: 'Error',
@@ -178,7 +167,7 @@ export function FileUpload() {
                      hover:file:bg-primary/90"
           />
           <p className="text-sm text-muted-foreground">
-            Upload an MP3 or WAV file with duration in the filename (e.g., "NSDR 20 min.wav" or "meditation-10min.mp3").
+            Upload an MP3 or WAV file with duration in the filename (e.g., "NSDR 20 min.wav").
             The file will be automatically placed in the correct duration folder.
           </p>
           {selectedFile && targetFolder && (
