@@ -26,13 +26,25 @@ on public.meditations
 for select 
 using (true);
 
--- Feedback policies - allow anonymous submissions
-create policy "Anyone can submit feedback"
+-- Drop the user_id column from feedback table
+alter table public.feedback drop column if exists user_id;
+
+-- Drop existing policies
+drop policy if exists "Users can create feedback" on public.feedback;
+drop policy if exists "Users can view own feedback" on public.feedback;
+
+-- Create new anonymous feedback policy
+create policy if not exists "Anyone can submit feedback"
 on public.feedback
 for insert
 using (true)
 with check (true);
 
+-- Drop unused index
+drop index if exists public.feedback_user_id_idx;
+
+-- Ensure the meditation_id index exists
+create index if not exists feedback_meditation_id_idx on public.feedback(meditation_id);
+
 -- Create indexes for better query performance
 create index meditations_created_at_idx on public.meditations(created_at desc);
-create index feedback_meditation_id_idx on public.feedback(meditation_id);
