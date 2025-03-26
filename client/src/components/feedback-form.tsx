@@ -6,11 +6,11 @@ import { useToast } from '@/hooks/use-toast';
 import { createFeedback, getWellbeingOptions } from '@/lib/supabase';
 
 interface FeedbackFormProps {
-  meditationId: number;
+  storageObjectId: string;
   onComplete: () => void;
 }
 
-export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
+export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps) {
   const { toast } = useToast();
 
   // Fetch wellbeing options from the database
@@ -22,7 +22,7 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
   const feedbackMutation = useMutation({
     mutationFn: async (wellbeingChange: number) => {
       return await createFeedback({
-        storage_object_id: meditationId.toString(), // Now expecting a storage object UUID
+        storage_object_id: storageObjectId, // Now expecting a storage object UUID
         wellbeing_change: wellbeingChange,
       });
     },

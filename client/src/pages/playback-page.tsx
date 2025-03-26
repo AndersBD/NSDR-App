@@ -63,9 +63,9 @@ export default function PlaybackPage() {
         </Card>
       </div>
 
-      {showFeedback && (
+      {showFeedback && meditation && (
         <FeedbackForm
-          meditationId={meditation.id}
+          storageObjectId = {meditation.storageObjectId}
           onComplete={() => {
             setShowFeedback(false);
             setShowTransition(true);
