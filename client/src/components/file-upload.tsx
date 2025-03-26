@@ -19,9 +19,9 @@ export function FileUpload() {
     resolver: zodResolver(insertMeditationSchema),
     defaultValues: {
       title: "",
-      duration: 0,
       fileName: "",
       fileUrl: "",
+      duration: 0,
     },
   });
 
@@ -51,7 +51,15 @@ export function FileUpload() {
     try {
       setUploading(true);
       const file = data.file[0];
-      
+
+      // Extract duration from folder structure
+      // File should be in a folder like "10 minutter", "20 minutter", etc.
+      const folderMatch = file.webkitRelativePath.match(/^(\d+)\s*minutter/);
+      if (!folderMatch) {
+        throw new Error("File must be in a folder named like '10 minutter', '20 minutter', etc.");
+      }
+      const durationMinutes = parseInt(folderMatch[1]);
+
       // Get upload URL
       const res = await fetch(`/api/upload-url?fileName=${file.name}`);
       const { signedUrl, url } = await res.json();
@@ -67,8 +75,8 @@ export function FileUpload() {
 
       // Create meditation
       createMutation.mutate({
-        title: data.title,
-        duration: data.duration,
+        title: data.title || file.name.replace('.mp3', ''),
+        duration: durationMinutes * 60, // Convert to seconds
         fileName: file.name,
         fileUrl: url,
       });
@@ -84,38 +92,32 @@ export function FileUpload() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Upload Meditation</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <Input placeholder="Title" {...form.register("title")} />
-            <Input
-              type="number"
-              placeholder="Duration (in seconds)"
-              {...form.register("duration", { valueAsNumber: true })}
-            />
-            <Input
-              type="file"
-              accept="audio/*"
-              {...form.register("file")}
-            />
-            <Button
-              type="submit"
-              disabled={uploading || createMutation.isPending}
-              className="w-full"
-            >
-              {(uploading || createMutation.isPending) && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              <Upload className="mr-2 h-4 w-4" />
-              Upload
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <Input 
+          placeholder="Title (optional - will use filename if not provided)" 
+          {...form.register("title")} 
+        />
+        <Input
+          type="file"
+          accept="audio/mp3"
+          directory=""
+          webkitdirectory=""
+          {...form.register("file")}
+          className="cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+        />
+        <Button
+          type="submit"
+          disabled={uploading || createMutation.isPending}
+          className="w-full"
+        >
+          {(uploading || createMutation.isPending) && (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          )}
+          <Upload className="mr-2 h-4 w-4" />
+          Upload
+        </Button>
+      </form>
+    </Form>
   );
 }

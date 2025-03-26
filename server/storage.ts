@@ -35,11 +35,15 @@ async function fetchAudioFiles() {
       continue;
     }
 
-    const durationInMinutes = parseInt(duration.split(' ')[0]);
-    const files = data.map(file => ({
+    // Filter out placeholder files and get only mp3 files
+    const mp3Files = data.filter(file => 
+      file.name.endsWith('.mp3') && !file.name.startsWith('.')
+    );
+
+    const files = mp3Files.map(file => ({
       fileName: file.name,
       fileUrl: getPublicUrl(file.name, duration),
-      duration: durationInMinutes * 60, // Convert minutes to seconds
+      duration: parseInt(duration.split(' ')[0]) * 60, // Convert minutes to seconds
       folder: duration
     }));
 

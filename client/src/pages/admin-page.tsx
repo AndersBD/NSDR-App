@@ -4,7 +4,7 @@ import { FileUpload } from "@/components/file-upload";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Trash2, LogOut } from "lucide-react";
+import { Trash2, LogOut, Upload } from "lucide-react";
 import { useLocation } from "wouter";
 import { signOut } from "@/lib/supabase";
 import {
@@ -15,6 +15,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function AdminPage() {
   const { toast } = useToast();
@@ -56,10 +63,21 @@ export default function AdminPage() {
     }
   };
 
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   return (
-    <div className="container py-8">
+    <div className="container max-w-7xl mx-auto py-10">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Admin Panel</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-primary">Admin Panel</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage your meditation sessions
+          </p>
+        </div>
         <Button 
           variant="outline"
           onClick={handleLogout}
@@ -70,39 +88,66 @@ export default function AdminPage() {
         </Button>
       </div>
 
-      <div className="mb-8">
-        <FileUpload />
-      </div>
+      <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Upload New Meditation</CardTitle>
+            <CardDescription>
+              Add a new meditation audio file to the library
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FileUpload />
+          </CardContent>
+        </Card>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Duration</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {meditations?.map((meditation) => (
-            <TableRow key={meditation.id}>
-              <TableCell>{meditation.title}</TableCell>
-              <TableCell>{Math.floor(meditation.duration / 60)}:{(meditation.duration % 60).toString().padStart(2, '0')}</TableCell>
-              <TableCell>{new Date(meditation.createdAt).toLocaleDateString()}</TableCell>
-              <TableCell>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => deleteMutation.mutate(meditation.id)}
-                  disabled={deleteMutation.isPending}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+        <Card>
+          <CardHeader>
+            <CardTitle>Meditation Library</CardTitle>
+            <CardDescription>
+              View and manage all meditation sessions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Added</TableHead>
+                  <TableHead className="w-24">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {meditations?.map((meditation) => (
+                  <TableRow key={meditation.id}>
+                    <TableCell className="font-medium">{meditation.title}</TableCell>
+                    <TableCell>{formatDuration(meditation.duration)}</TableCell>
+                    <TableCell>{new Date(meditation.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => deleteMutation.mutate(meditation.id)}
+                        disabled={deleteMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {!meditations?.length && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground py-6">
+                      No meditations found. Upload some files to get started.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
