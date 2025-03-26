@@ -13,9 +13,11 @@ export default function SessionListPage() {
     queryKey: ["/api/meditations"],
   });
 
+  // Filter meditations based on duration
   const filteredMeditations = meditations?.filter((meditation) => {
     const durationInMinutes = Math.floor(meditation.duration / 60);
-    return durationInMinutes.toString() === duration;
+    return durationInMinutes.toString() === duration &&
+           !meditation.fileName.includes('emptyFolderPlaceholder');
   });
 
   return (

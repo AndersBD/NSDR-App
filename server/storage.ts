@@ -37,7 +37,9 @@ async function fetchAudioFiles() {
 
     // Filter out placeholder files and get only mp3 files
     const mp3Files = data.filter(file => 
-      file.name.endsWith('.mp3') && !file.name.startsWith('.')
+      file.name.endsWith('.mp3') && 
+      !file.name.startsWith('.') && 
+      !file.name.includes('emptyFolderPlaceholder')
     );
 
     const files = mp3Files.map(file => ({

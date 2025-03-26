@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { insertMeditationSchema } from "@shared/schema";
-import { Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Upload } from "lucide-react";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { insertMeditationSchema } from '@shared/schema';
+import { Form } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
+import { Loader2, Upload } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export function FileUpload() {
   const { toast } = useToast();
@@ -18,31 +18,40 @@ export function FileUpload() {
   const form = useForm({
     resolver: zodResolver(insertMeditationSchema),
     defaultValues: {
-      title: "",
-      fileName: "",
-      fileUrl: "",
+      title: '',
+      fileName: '',
+      fileUrl: '',
       duration: 0,
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/meditations", data);
+      const res = await fetch('/api/meditations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to create meditation record');
+      }
+
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/meditations"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/meditations'] });
       form.reset();
       toast({
-        title: "Success",
-        description: "Meditation uploaded successfully",
+        title: 'Success',
+        description: 'Meditation uploaded successfully',
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -52,39 +61,45 @@ export function FileUpload() {
       setUploading(true);
       const file = data.file[0];
 
-      // Extract duration from folder structure
-      // File should be in a folder like "10 minutter", "20 minutter", etc.
-      const folderMatch = file.webkitRelativePath.match(/^(\d+)\s*minutter/);
-      if (!folderMatch) {
-        throw new Error("File must be in a folder named like '10 minutter', '20 minutter', etc.");
+      // Extract duration from filename (e.g., "meditation-10min.mp3" -> 10)
+      const durationMatch = file.name.match(/(\d+)min/);
+      if (!durationMatch) {
+        throw new Error('Filename must include duration (e.g., "meditation-10min.mp3")');
       }
-      const durationMinutes = parseInt(folderMatch[1]);
 
-      // Get upload URL
-      const res = await fetch(`/api/upload-url?fileName=${file.name}`);
-      const { signedUrl, url } = await res.json();
+      const durationMinutes = parseInt(durationMatch[1]);
+      const folderName = `${durationMinutes} minutter`;
 
-      // Upload file
-      await fetch(signedUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type,
-        },
-      });
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('lydfiler-til-nsdr')
+        .upload(`${folderName}/${file.name}`, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      // Create meditation
+      if (uploadError) {
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('lydfiler-til-nsdr')
+        .getPublicUrl(`${folderName}/${file.name}`);
+
+      if (!urlData?.publicUrl) {
+        throw new Error('Failed to get public URL for uploaded file');
+      }
+
       createMutation.mutate({
-        title: data.title || file.name.replace('.mp3', ''),
-        duration: durationMinutes * 60, // Convert to seconds
-        fileName: file.name,
-        fileUrl: url,
+        title: data.title || file.name.replace(/[-_]\d+min\.mp3$/, ''),
+        duration: durationMinutes * 60,
+        fileName: `${folderName}/${file.name}`,
+        fileUrl: urlData.publicUrl,
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Failed to upload file",
-        variant: "destructive",
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
       });
     } finally {
       setUploading(false);
@@ -94,28 +109,45 @@ export function FileUpload() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <Input 
-          placeholder="Title (optional - will use filename if not provided)" 
-          {...form.register("title")} 
-        />
-        <Input
-          type="file"
-          accept="audio/mp3"
-          directory=""
-          webkitdirectory=""
-          {...form.register("file")}
-          className="cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-        />
-        <Button
-          type="submit"
-          disabled={uploading || createMutation.isPending}
+        <div className="space-y-2">
+          <Input 
+            type="text"
+            placeholder="Title (optional - will use filename if not provided)" 
+            {...form.register("title")} 
+          />
+          <p className="text-sm text-muted-foreground">
+            Enter a descriptive title for the meditation or leave blank to use the filename
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <input
+            type="file"
+            accept="audio/mp3"
+            {...form.register("file", {
+              required: "Please select a file to upload"
+            })}
+            className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 
+                     file:rounded-md file:border-0 file:text-sm file:font-medium 
+                     file:bg-primary file:text-primary-foreground 
+                     hover:file:bg-primary/90"
+          />
+          <p className="text-sm text-muted-foreground">
+            Upload an MP3 file with duration in the filename (e.g., "meditation-10min.mp3").
+            The file will be automatically placed in the correct duration folder.
+          </p>
+        </div>
+
+        <Button 
+          type="submit" 
+          disabled={uploading || createMutation.isPending} 
           className="w-full"
         >
           {(uploading || createMutation.isPending) && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
           <Upload className="mr-2 h-4 w-4" />
-          Upload
+          Upload Meditation
         </Button>
       </form>
     </Form>
