@@ -1,21 +1,20 @@
-import { createContext, ReactNode, useContext, useEffect } from 'react';
-import { useSupabaseClient, useUser, Session } from '@supabase/auth-helpers-react';
+import { createContext, ReactNode, useContext } from 'react';
+import { useSessionContext } from '@supabase/auth-helpers-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 type AuthContextType = {
   user: any | null;
   isLoading: boolean;
   error: Error | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const supabase = useSupabaseClient();
-  const user = useUser();
+  const { session, isLoading } = useSessionContext();
   const { toast } = useToast();
 
   async function signIn(email: string, password: string) {
@@ -27,22 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) {
       toast({
         title: 'Login failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  }
-
-  async function signUp(email: string, password: string) {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      toast({
-        title: 'Registration failed',
         description: error.message,
         variant: 'destructive',
       });
@@ -65,11 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        user,
-        isLoading: false,
+        user: session?.user ?? null,
+        isLoading,
         error: null,
         signIn,
-        signUp,
         signOut,
       }}
     >

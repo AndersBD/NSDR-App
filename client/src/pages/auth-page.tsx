@@ -25,7 +25,7 @@ export default function AuthPage() {
 
   // Redirect if already logged in
   if (user) {
-    setLocation("/");
+    setLocation("/admin");
     return null;
   }
 
@@ -62,7 +62,7 @@ function LoginForm() {
       await signIn(data.email, data.password);
     },
     onSuccess: () => {
-      setLocation("/");
+      setLocation("/admin");
     },
     onError: (error: Error) => {
       toast({
