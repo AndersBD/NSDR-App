@@ -15,14 +15,14 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
 
   // Fetch wellbeing options from the database
   const { data: wellbeingOptions, isLoading: isLoadingOptions } = useQuery({
-    queryKey: ['/api/wellbeing-options'],
+    queryKey: ['wellbeing-options'],
     queryFn: getWellbeingOptions,
   });
 
   const feedbackMutation = useMutation({
     mutationFn: async (wellbeingChange: number) => {
       return await createFeedback({
-        storage_object_id: storageObjectId, // Now expecting a storage object UUID
+        storage_object_id: storageObjectId,
         wellbeing_change: wellbeingChange,
       });
     },

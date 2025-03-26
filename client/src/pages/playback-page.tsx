@@ -29,6 +29,7 @@ export default function PlaybackPage() {
     if (!audio) return;
 
     const handleEnded = () => {
+      console.log('Audio playback ended, showing feedback form');
       setShowFeedback(true);
     };
 
