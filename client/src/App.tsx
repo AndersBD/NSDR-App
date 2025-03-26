@@ -13,10 +13,11 @@ import PlaybackPage from "@/pages/playback-page";
 import AuthPage from "@/pages/auth-page";
 import AdminPage from "@/pages/admin-page";
 import NotFound from "@/pages/not-found";
+import env from './lib/env-config';
 
 const supabaseClient = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
+  env.SUPABASE_URL,
+  env.SUPABASE_KEY
 );
 
 function Router() {

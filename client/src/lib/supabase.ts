@@ -1,13 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase';
-
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
-  throw new Error('Missing Supabase credentials');
-}
+import env from './env-config';
 
 export const supabase = createClient<Database>(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
+  env.SUPABASE_URL,
+  env.SUPABASE_KEY
 );
 
 // Database types
@@ -18,7 +15,7 @@ export type Meditation = {
   file_name: string;
   file_url: string;
   created_at: string;
-}
+};
 
 export type Feedback = {
   id: number;
@@ -26,7 +23,7 @@ export type Feedback = {
   meditation_id: number;
   wellbeing_change: number;
   created_at: string;
-}
+};
 
 // Helper functions for meditations
 export async function getMeditations() {
@@ -40,11 +37,7 @@ export async function getMeditations() {
 }
 
 export async function getMeditation(id: number) {
-  const { data, error } = await supabase
-    .from('meditations')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const { data, error } = await supabase.from('meditations').select('*').eq('id', id).single();
 
   if (error) throw error;
   return data;
@@ -56,11 +49,7 @@ export async function createFeedback(feedback: {
   wellbeing_change: number;
   user_id?: string;
 }) {
-  const { data, error } = await supabase
-    .from('feedback')
-    .insert(feedback)
-    .select()
-    .single();
+  const { data, error } = await supabase.from('feedback').insert(feedback).select().single();
 
   if (error) throw error;
   return data;
@@ -68,21 +57,19 @@ export async function createFeedback(feedback: {
 
 // Helper functions for auth
 export async function signIn(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
   if (error) throw error;
-  return data;
 }
 
 export async function signUp(email: string, password: string) {
-  const { data, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email,
     password,
   });
   if (error) throw error;
-  return data;
 }
 
 export async function signOut() {
