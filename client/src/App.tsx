@@ -24,10 +24,10 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={WelcomePage} />
+      <Route path="/auth" component={AuthPage} />
       <Route path="/duration/:type" component={DurationPage} />
       <Route path="/sessions/:type/:duration" component={SessionListPage} />
       <Route path="/play/:id" component={PlaybackPage} />
-      <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/admin" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>
