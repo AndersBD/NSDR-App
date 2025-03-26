@@ -4,7 +4,9 @@ import { FileUpload } from "@/components/file-upload";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Trash2 } from "lucide-react";
+import { Trash2, LogOut } from "lucide-react";
+import { useLocation } from "wouter";
+import { signOut } from "@/lib/supabase";
 import {
   Table,
   TableBody,
@@ -16,6 +18,7 @@ import {
 
 export default function AdminPage() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const { data: meditations } = useQuery<Meditation[]>({
     queryKey: ["/api/meditations"],
   });
@@ -40,10 +43,33 @@ export default function AdminPage() {
     },
   });
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setLocation('/auth');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to log out",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="container py-8">
-      <h1 className="text-3xl font-bold mb-8">Admin Panel</h1>
-      
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Admin Panel</h1>
+        <Button 
+          variant="outline"
+          onClick={handleLogout}
+          className="flex items-center gap-2"
+        >
+          <LogOut className="h-4 w-4" />
+          Log out
+        </Button>
+      </div>
+
       <div className="mb-8">
         <FileUpload />
       </div>
