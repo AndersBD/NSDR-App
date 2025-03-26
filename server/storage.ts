@@ -14,13 +14,6 @@ if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-type AudioFile = {
-  fileName: string;
-  fileUrl: string;
-  duration: number;
-  folder: string;
-};
-
 function getPublicUrl(fileName: string, folder: string): string {
   const { data } = supabase.storage
     .from('lydfiler-til-nsdr')
@@ -28,96 +21,51 @@ function getPublicUrl(fileName: string, folder: string): string {
   return data.publicUrl;
 }
 
-async function fetchAudioFiles(): Promise<AudioFile[]> {
+async function fetchAudioFiles() {
   const durations = ['10 minutter', '20 minutter', '30 minutter', '60 minutter'];
-  let allFiles: AudioFile[] = [];
-
-  console.log('Fetching audio files from Supabase storage...');
+  let allFiles = [];
 
   for (const duration of durations) {
-    try {
-      const { data, error } = await supabase.storage
-        .from('lydfiler-til-nsdr')
-        .list(duration);
+    const { data, error } = await supabase.storage
+      .from('lydfiler-til-nsdr')
+      .list(duration);
 
-      if (error) {
-        console.error(`Error fetching ${duration} files:`, error);
-        continue;
-      }
-
-      if (!data || !Array.isArray(data)) {
-        console.warn(`No valid data returned for ${duration}`);
-        continue;
-      }
-
-      // Filter out any system files, placeholders, or non-MP3 files
-      const validFiles = data.filter(file => 
-        // Must be an MP3 file
-        file.name.toLowerCase().endsWith('.mp3') && 
-        // Skip hidden files
-        !file.name.startsWith('.') && 
-        // Skip placeholder files
-        !file.name.toLowerCase().includes('placeholder') &&
-        // Skip empty or invalid names
-        file.name.trim().length > 0
-      );
-
-      console.log(`Found ${validFiles.length} valid files in ${duration}`);
-
-      const files = validFiles.map(file => ({
-        fileName: file.name,
-        fileUrl: getPublicUrl(file.name, duration),
-        duration: parseInt(duration.split(' ')[0]) * 60, // Convert minutes to seconds
-        folder: duration
-      }));
-
-      allFiles = [...allFiles, ...files];
-    } catch (error) {
-      console.error(`Unexpected error processing ${duration}:`, error);
+    if (error) {
+      console.error(`Error fetching ${duration} files:`, error);
+      continue;
     }
+
+    // Filter out placeholder files and get only mp3 files
+    const mp3Files = data.filter(file => 
+      file.name.endsWith('.mp3') && !file.name.startsWith('.')
+    );
+
+    const files = mp3Files.map(file => ({
+      fileName: file.name,
+      fileUrl: getPublicUrl(file.name, duration),
+      duration: parseInt(duration.split(' ')[0]) * 60, // Convert minutes to seconds
+      folder: duration
+    }));
+
+    allFiles = [...allFiles, ...files];
   }
 
-  console.log(`Total valid files found: ${allFiles.length}`);
   return allFiles;
 }
 
 // Store files in database for easy querying and relationships
 async function syncAudioFilesToDatabase() {
-  console.log('Starting database sync of audio files...');
+  const audioFiles = await fetchAudioFiles();
 
-  try {
-    const audioFiles = await fetchAudioFiles();
+  for (const file of audioFiles) {
+    const meditation = {
+      title: file.fileName.replace('.mp3', ''),
+      duration: file.duration,
+      fileName: `${file.folder}/${file.fileName}`,
+      fileUrl: file.fileUrl,
+    };
 
-    for (const file of audioFiles) {
-      try {
-        // Check if meditation already exists to avoid duplicates
-        const existingMeditations = await storage.getMeditations();
-        const exists = existingMeditations.some(m => 
-          m.fileName === `${file.folder}/${file.fileName}` &&
-          m.fileUrl === file.fileUrl
-        );
-
-        if (!exists) {
-          const meditation = {
-            title: file.fileName.replace('.mp3', ''),
-            duration: file.duration,
-            fileName: `${file.folder}/${file.fileName}`,
-            fileUrl: file.fileUrl,
-          };
-
-          await storage.createMeditation(meditation);
-          console.log(`Synced meditation: ${meditation.title}`);
-        } else {
-          console.log(`Skipping existing meditation: ${file.fileName}`);
-        }
-      } catch (error) {
-        console.error(`Error syncing file ${file.fileName}:`, error);
-      }
-    }
-
-    console.log('Database sync completed successfully');
-  } catch (error) {
-    console.error('Failed to sync audio files to database:', error);
+    await storage.createMeditation(meditation);
   }
 }
 
