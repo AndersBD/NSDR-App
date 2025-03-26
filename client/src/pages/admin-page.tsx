@@ -73,7 +73,7 @@ export default function AdminPage() {
     <div className="container max-w-7xl mx-auto py-10">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-primary">Admin Panel</h1>
+          <h1 className="text-3xl font-bold text-[#384c44]">Admin Panel</h1>
           <p className="text-muted-foreground mt-1">
             Manage your meditation sessions
           </p>
@@ -81,7 +81,7 @@ export default function AdminPage() {
         <Button 
           variant="outline"
           onClick={handleLogout}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-2 border-[#384c44] text-[#384c44] hover:bg-[#384c44] hover:text-white"
         >
           <LogOut className="h-4 w-4" />
           Log out
@@ -89,9 +89,9 @@ export default function AdminPage() {
       </div>
 
       <div className="grid gap-6">
-        <Card>
+        <Card className="border-2 border-[#384c44]">
           <CardHeader>
-            <CardTitle>Upload New Meditation</CardTitle>
+            <CardTitle className="text-[#384c44]">Upload New Meditation</CardTitle>
             <CardDescription>
               Add a new meditation audio file to the library
             </CardDescription>
@@ -101,9 +101,9 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-2 border-[#384c44]">
           <CardHeader>
-            <CardTitle>Meditation Library</CardTitle>
+            <CardTitle className="text-[#384c44]">Meditation Library</CardTitle>
             <CardDescription>
               View and manage all meditation sessions
             </CardDescription>
@@ -112,10 +112,10 @@ export default function AdminPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Added</TableHead>
-                  <TableHead className="w-24">Actions</TableHead>
+                  <TableHead className="text-[#384c44]">Title</TableHead>
+                  <TableHead className="text-[#384c44]">Duration</TableHead>
+                  <TableHead className="text-[#384c44]">Added</TableHead>
+                  <TableHead className="w-24 text-[#384c44]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -130,6 +130,7 @@ export default function AdminPage() {
                         size="icon"
                         onClick={() => deleteMutation.mutate(meditation.id)}
                         disabled={deleteMutation.isPending}
+                        className="bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
