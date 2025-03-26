@@ -11,9 +11,11 @@ import { queryClient } from '@/lib/queryClient';
 import { Loader2, Upload, CheckCircle2, XCircle } from 'lucide-react';
 import { uploadFile } from '@/lib/supabase';
 import { Progress } from '@/components/ui/progress';
+import { useAuth } from '@/hooks/use-auth';
 
 export function FileUpload() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -34,11 +36,17 @@ export function FileUpload() {
     mutationFn: async (data: any) => {
       const res = await fetch('/api/meditations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Important: include credentials for session cookie
         body: JSON.stringify(data),
       });
 
       if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error('You must be logged in as an admin to upload meditations');
+        }
         const error = await res.text();
         throw new Error(error || 'Failed to create meditation record');
       }
@@ -96,6 +104,10 @@ export function FileUpload() {
 
   const onSubmit = async (formData: any) => {
     try {
+      if (!user?.isAdmin) {
+        throw new Error('You must be logged in as an admin to upload meditations');
+      }
+
       if (!selectedFile || !targetFolder) {
         throw new Error('Please select a valid file with duration in the filename');
       }
@@ -201,7 +213,7 @@ export function FileUpload() {
 
         <Button 
           type="submit" 
-          disabled={uploading || createMutation.isPending || !selectedFile || !targetFolder} 
+          disabled={uploading || createMutation.isPending || !selectedFile || !targetFolder || !user?.isAdmin} 
           className="w-full"
         >
           {(uploading || createMutation.isPending) && (
@@ -210,6 +222,12 @@ export function FileUpload() {
           <Upload className="mr-2 h-4 w-4" />
           Upload Meditation
         </Button>
+
+        {!user?.isAdmin && (
+          <p className="text-sm text-red-500 mt-2">
+            You must be logged in as an admin to upload meditations
+          </p>
+        )}
       </form>
     </Form>
   );
