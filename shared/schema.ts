@@ -20,8 +20,7 @@ export const meditations = pgTable("meditations", {
 
 export const feedback = pgTable("feedback", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  meditationId: integer("meditation_id").references(() => meditations.id),
+  storageObjectId: text("storage_object_id").notNull(),
   wellbeingChange: integer("wellbeing_change").notNull(), // -2 to 2
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

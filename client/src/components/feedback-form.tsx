@@ -22,7 +22,7 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
   const feedbackMutation = useMutation({
     mutationFn: async (wellbeingChange: number) => {
       return await createFeedback({
-        meditation_id: meditationId,
+        storage_object_id: meditationId, // Now expecting a storage object UUID
         wellbeing_change: wellbeingChange,
       });
     },
