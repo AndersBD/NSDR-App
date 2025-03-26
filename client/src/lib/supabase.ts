@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import env from './env-config';
-import { Database } from '@/types/supabase'; //Retained from original
+import { Database } from '@/types/supabase';
 
 export const supabase = createClient<Database>(
   env.SUPABASE_URL,
