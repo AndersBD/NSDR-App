@@ -59,12 +59,18 @@ export function FileUpload() {
   const onSubmit = async (data: any) => {
     try {
       setUploading(true);
+
+      // Check if file is selected
+      if (!data.file || !data.file.length) {
+        throw new Error('Please select a file to upload');
+      }
+
       const file = data.file[0];
 
-      // Extract duration from filename (e.g., "meditation-10min.mp3" -> 10)
-      const durationMatch = file.name.match(/(\d+)min/);
+      // Extract duration from filename (e.g., "20 min.wav" or "20min.mp3")
+      const durationMatch = file.name.match(/(\d+)\s*min/i);
       if (!durationMatch) {
-        throw new Error('Filename must include duration (e.g., "meditation-10min.mp3")');
+        throw new Error('Filename must include duration (e.g., "meditation-20min.wav" or "NSDR 20 min.mp3")');
       }
 
       const durationMinutes = parseInt(durationMatch[1]);
@@ -90,7 +96,7 @@ export function FileUpload() {
       }
 
       createMutation.mutate({
-        title: data.title || file.name.replace(/[-_]\d+min\.mp3$/, ''),
+        title: data.title || file.name.replace(/\.\w+$/, ''),
         duration: durationMinutes * 60,
         fileName: `${folderName}/${file.name}`,
         fileUrl: urlData.publicUrl,
@@ -123,7 +129,7 @@ export function FileUpload() {
         <div className="space-y-2">
           <input
             type="file"
-            accept="audio/mp3"
+            accept="audio/mp3,audio/wav"
             {...form.register("file", {
               required: "Please select a file to upload"
             })}
@@ -133,7 +139,7 @@ export function FileUpload() {
                      hover:file:bg-primary/90"
           />
           <p className="text-sm text-muted-foreground">
-            Upload an MP3 file with duration in the filename (e.g., "meditation-10min.mp3").
+            Upload an MP3 or WAV file with duration in the filename (e.g., "NSDR 20 min.wav" or "meditation-10min.mp3").
             The file will be automatically placed in the correct duration folder.
           </p>
         </div>
