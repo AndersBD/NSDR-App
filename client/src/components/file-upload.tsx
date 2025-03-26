@@ -8,12 +8,17 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, CheckCircle2, XCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { Progress } from '@/components/ui/progress';
 
 export function FileUpload() {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [targetFolder, setTargetFolder] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
 
   const form = useForm({
     resolver: zodResolver(insertMeditationSchema),
@@ -34,7 +39,8 @@ export function FileUpload() {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to create meditation record');
+        const error = await res.text();
+        throw new Error(error || 'Failed to create meditation record');
       }
 
       return res.json();
@@ -42,12 +48,17 @@ export function FileUpload() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/meditations'] });
       form.reset();
+      setSelectedFile(null);
+      setTargetFolder(null);
+      setUploadProgress(0);
+      setUploadStatus('success');
       toast({
         title: 'Success',
         description: 'Meditation uploaded successfully',
       });
     },
     onError: (error: Error) => {
+      setUploadStatus('error');
       toast({
         title: 'Error',
         description: error.message,
@@ -56,30 +67,52 @@ export function FileUpload() {
     },
   });
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    setUploadStatus('idle');
+    setUploadProgress(0);
+
+    // Extract duration from filename (e.g., "20 min.wav" or "20min.mp3")
+    const durationMatch = file.name.match(/(\d+)\s*min/i);
+    if (durationMatch) {
+      const durationMinutes = parseInt(durationMatch[1]);
+      const folder = `${durationMinutes} minutter`;
+      setTargetFolder(folder);
+    } else {
+      setTargetFolder(null);
+      toast({
+        title: 'Warning',
+        description: 'Filename must include duration (e.g., "meditation-20min.wav" or "NSDR 20 min.mp3")',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const onSubmit = async (formData: any) => {
     try {
-      setUploading(true);
-
-      // Get the file from the event
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      if (!fileInput?.files?.length) {
-        throw new Error('Please select a file to upload');
+      if (!selectedFile || !targetFolder) {
+        throw new Error('Please select a valid file with duration in the filename');
       }
 
-      const file = fileInput.files[0];
+      setUploading(true);
+      setUploadStatus('uploading');
+      setUploadProgress(10);
 
-      // Extract duration from filename (e.g., "20 min.wav" or "20min.mp3")
-      const durationMatch = file.name.match(/(\d+)\s*min/i);
+      const durationMatch = selectedFile.name.match(/(\d+)\s*min/i);
       if (!durationMatch) {
         throw new Error('Filename must include duration (e.g., "meditation-20min.wav" or "NSDR 20 min.mp3")');
       }
 
       const durationMinutes = parseInt(durationMatch[1]);
-      const folderName = `${durationMinutes} minutter`;
+
+      setUploadProgress(30);
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('lydfiler-til-nsdr')
-        .upload(`${folderName}/${file.name}`, file, {
+        .upload(`${targetFolder}/${selectedFile.name}`, selectedFile, {
           cacheControl: '3600',
           upsert: false
         });
@@ -88,21 +121,28 @@ export function FileUpload() {
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
+      setUploadProgress(70);
+
       const { data: urlData } = supabase.storage
         .from('lydfiler-til-nsdr')
-        .getPublicUrl(`${folderName}/${file.name}`);
+        .getPublicUrl(`${targetFolder}/${selectedFile.name}`);
 
       if (!urlData?.publicUrl) {
         throw new Error('Failed to get public URL for uploaded file');
       }
 
-      createMutation.mutate({
-        title: formData.title || file.name.replace(/\.\w+$/, ''),
+      setUploadProgress(90);
+
+      await createMutation.mutateAsync({
+        title: formData.title || selectedFile.name.replace(/\.\w+$/, ''),
         duration: durationMinutes * 60,
-        fileName: `${folderName}/${file.name}`,
+        fileName: `${targetFolder}/${selectedFile.name}`,
         fileUrl: urlData.publicUrl,
       });
+
+      setUploadProgress(100);
     } catch (error: any) {
+      setUploadStatus('error');
       toast({
         title: 'Error',
         description: error.message,
@@ -131,6 +171,7 @@ export function FileUpload() {
           <input
             type="file"
             accept="audio/mp3,audio/wav"
+            onChange={handleFileChange}
             className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 
                      file:rounded-md file:border-0 file:text-sm file:font-medium 
                      file:bg-primary file:text-primary-foreground 
@@ -140,11 +181,38 @@ export function FileUpload() {
             Upload an MP3 or WAV file with duration in the filename (e.g., "NSDR 20 min.wav" or "meditation-10min.mp3").
             The file will be automatically placed in the correct duration folder.
           </p>
+          {selectedFile && targetFolder && (
+            <p className="text-sm font-medium text-primary">
+              File will be uploaded to folder: {targetFolder}
+            </p>
+          )}
         </div>
+
+        {uploadStatus !== 'idle' && (
+          <div className="space-y-2">
+            <Progress value={uploadProgress} className="h-2" />
+            <div className="flex items-center gap-2">
+              {uploadStatus === 'uploading' && (
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              )}
+              {uploadStatus === 'success' && (
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              )}
+              {uploadStatus === 'error' && (
+                <XCircle className="h-4 w-4 text-red-500" />
+              )}
+              <p className="text-sm text-muted-foreground">
+                {uploadStatus === 'uploading' && 'Uploading...'}
+                {uploadStatus === 'success' && 'Upload complete'}
+                {uploadStatus === 'error' && 'Upload failed'}
+              </p>
+            </div>
+          </div>
+        )}
 
         <Button 
           type="submit" 
-          disabled={uploading || createMutation.isPending} 
+          disabled={uploading || createMutation.isPending || !selectedFile || !targetFolder} 
           className="w-full"
         >
           {(uploading || createMutation.isPending) && (
