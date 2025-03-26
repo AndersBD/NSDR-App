@@ -2,15 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import env from './env-config';
 import { Database } from '@/types/supabase';
 
-export const supabase = createClient<Database>(
-  env.SUPABASE_URL,
-  env.SUPABASE_KEY,
-  {
-    auth: {
-      persistSession: false
-    }
-  }
-);
+export const supabase = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_KEY, {
+  auth: {
+    persistSession: false,
+  },
+});
 
 // Types
 export type StorageFile = {
@@ -62,24 +58,22 @@ export async function getMeditation(id: number) {
 // Helper function to get all duration folders
 export async function getDurationFolders(): Promise<DurationFolder[]> {
   try {
-    const { data: folders, error } = await supabase.storage
-      .from('lydfiler-til-nsdr')
-      .list('', {
-        limit: 100,
-        offset: 0,
-        sortBy: { column: 'name', order: 'asc' }
-      });
+    const { data: folders, error } = await supabase.storage.from('lydfiler-til-nsdr').list('', {
+      limit: 100,
+      offset: 0,
+      sortBy: { column: 'name', order: 'asc' },
+    });
 
     if (error) throw error;
 
     return folders
-      .filter(folder => folder.name.match(/^\d+\s*minutter$/))
-      .map(folder => {
+      .filter((folder) => folder.name.match(/^\d+\s*minutter$/))
+      .map((folder) => {
         const duration = parseInt(folder.name.match(/(\d+)/)?.[1] || '0');
         return {
           name: folder.name,
           duration,
-          path: folder.name
+          path: folder.name,
         };
       })
       .sort((a, b) => a.duration - b.duration);
@@ -96,21 +90,21 @@ export async function getMeditationsByDuration(durationPath: string): Promise<St
       .from('lydfiler-til-nsdr')
       .list(durationPath, {
         limit: 100,
-        sortBy: { column: 'name', order: 'asc' }
+        sortBy: { column: 'name', order: 'asc' },
       });
 
     if (error) throw error;
 
     // First, get all audio files
-    const audioFiles = files.filter(file =>
-      file.name.endsWith('.mp3') || file.name.endsWith('.wav')
+    const audioFiles = files.filter(
+      (file) => file.name.endsWith('.mp3') || file.name.endsWith('.wav')
     );
 
     // Create a map of image files for quick lookup
     const imageFiles = new Map(
       files
-        .filter(file => file.name.endsWith('.jpg') || file.name.endsWith('.png'))
-        .map(file => [file.name.replace(/\.(jpg|png)$/, ''), file])
+        .filter((file) => file.name.endsWith('.jpg') || file.name.endsWith('.png'))
+        .map((file) => [file.name.replace(/\.(jpg|png)$/, ''), file])
     );
 
     return await Promise.all(
@@ -125,9 +119,11 @@ export async function getMeditationsByDuration(durationPath: string): Promise<St
         // Look for matching image file
         const matchingImage = imageFiles.get(basename);
         const imageUrl = matchingImage
-          ? (await supabase.storage
-              .from('lydfiler-til-nsdr')
-              .getPublicUrl(`${durationPath}/${matchingImage.name}`)).data.publicUrl
+          ? (
+              await supabase.storage
+                .from('lydfiler-til-nsdr')
+                .getPublicUrl(`${durationPath}/${matchingImage.name}`)
+            ).data.publicUrl
           : null;
 
         const duration = parseInt(durationPath.match(/(\d+)/)?.[1] || '0');
@@ -138,7 +134,7 @@ export async function getMeditationsByDuration(durationPath: string): Promise<St
           duration: duration * 60, // Convert to seconds
           audioUrl: audioData.publicUrl,
           imageUrl: imageUrl,
-          createdAt: file.created_at
+          createdAt: file.created_at,
         };
       })
     );
@@ -150,10 +146,7 @@ export async function getMeditationsByDuration(durationPath: string): Promise<St
 
 // Helper function to get wellbeing options
 export async function getWellbeingOptions() {
-  const { data, error } = await supabase
-    .from('wellbeing_options')
-    .select('*')
-    .order('value');
+  const { data, error } = await supabase.from('wellbeing_options').select('*').order('value');
 
   if (error) throw error;
   return data;
@@ -164,11 +157,7 @@ export async function createFeedback(feedback: {
   storage_object_id: string;
   wellbeing_change: number;
 }) {
-  const { data, error } = await supabase
-    .from('feedback')
-    .insert(feedback)
-    .select()
-    .single();
+  const { data, error } = await supabase.from('feedback').insert(feedback).select().single();
 
   if (error) throw error;
   return data;
@@ -199,52 +188,82 @@ export async function signOut() {
 // Add new function to get meditation by storage ID
 export async function getMeditationByStorageId(id: string): Promise<StorageFile | null> {
   try {
-    // List all files to find the one with matching ID
-    const { data: files, error } = await supabase.storage
-      .from('lydfiler-til-nsdr')
-      .list('', {
-        limit: 100,
-        search: id
-      });
+    console.log('Searching for meditation with ID:', id);
 
-    if (error) {
-      console.error('Error listing files:', error);
-      return null;
+    // Helper function to search for file in a folder
+    async function searchInFolder(folderPath: string): Promise<StorageFile | null> {
+      const { data: files, error } = await supabase.storage
+        .from('lydfiler-til-nsdr')
+        .list(folderPath);
+
+      if (error) {
+        console.error(`Error listing files in ${folderPath}:`, error);
+        return null;
+      }
+
+      console.log(`Files in ${folderPath}:`, files);
+
+      // Find audio file with matching ID
+      const audioFile = files.find(f => f.id === id);
+      if (!audioFile) return null;
+
+      console.log('Found matching file:', audioFile);
+
+      const basename = audioFile.name.replace(/\.\w+$/, '');
+
+      // Get audio URL
+      const { data: audioData } = await supabase.storage
+        .from('lydfiler-til-nsdr')
+        .getPublicUrl(`${folderPath}/${audioFile.name}`);
+
+      // Look for matching image
+      const matchingImage = files.find(f =>
+        (f.name.endsWith('.jpg') || f.name.endsWith('.png')) &&
+        f.name.startsWith(basename)
+      );
+
+      const imageUrl = matchingImage
+        ? (await supabase.storage
+            .from('lydfiler-til-nsdr')
+            .getPublicUrl(`${folderPath}/${matchingImage.name}`)).data.publicUrl
+        : null;
+
+      const duration = parseInt(folderPath.match(/(\d+)/)?.[1] || '0');
+
+      return {
+        id: audioFile.id,
+        name: basename,
+        duration: duration * 60, // Convert to seconds
+        audioUrl: audioData.publicUrl,
+        imageUrl,
+        createdAt: audioFile.created_at
+      };
     }
 
-    // Find the file with matching ID
-    const file = files.find(f => f.id === id);
-    if (!file) {
-      console.error('File not found with ID:', id);
-      return null;
+    // Get root folders
+    const { data: folders, error: foldersError } = await supabase.storage
+      .from('lydfiler-til-nsdr')
+      .list('');
+
+    if (foldersError) {
+      console.error('Error getting folders:', foldersError);
+      throw foldersError;
     }
 
-    const basename = file.name.replace(/\.\w+$/, '');
-    const folderPath = file.name.split('/').slice(0, -1).join('/');
+    // Search through each duration folder
+    for (const folder of folders) {
+      if (!folder.name.match(/^\d+\s*minutter$/)) continue;
 
-    // Get audio URL
-    const { data: audioData } = await supabase.storage
-      .from('lydfiler-til-nsdr')
-      .getPublicUrl(file.name);
+      console.log('Searching in folder:', folder.name);
+      const result = await searchInFolder(folder.name);
+      if (result) return result;
+    }
 
-    // Look for matching image
-    const { data: imageData } = await supabase.storage
-      .from('lydfiler-til-nsdr')
-      .getPublicUrl(`${folderPath}/${basename}.jpg`);
+    console.error('File not found with ID:', id);
+    return null;
 
-    // Extract duration from folder path
-    const duration = parseInt(folderPath.match(/(\d+)/)?.[1] || '0');
-
-    return {
-      id: file.id,
-      name: basename,
-      duration: duration * 60, // Convert to seconds
-      audioUrl: audioData.publicUrl,
-      imageUrl: imageData.publicUrl,
-      createdAt: file.created_at
-    };
   } catch (error: any) {
     console.error('Error getting meditation:', error);
-    return null;
+    throw error;
   }
 }

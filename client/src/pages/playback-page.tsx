@@ -21,6 +21,7 @@ export default function PlaybackPage() {
   const { data: meditation, isLoading, error } = useQuery({
     queryKey: ['meditation', id],
     queryFn: () => getMeditationByStorageId(id!),
+    retry: 1
   });
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function PlaybackPage() {
       description: "Failed to load meditation session",
       variant: "destructive",
     });
+    console.error('Meditation load error:', error);
   }
 
   if (isLoading) {
@@ -82,7 +84,7 @@ export default function PlaybackPage() {
         <Card className="border-2 border-[#384c44]">
           <CardHeader>
             <CardTitle className="text-2xl text-center text-[#384c44]">
-              Afspiller...
+              {meditation.name}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -91,7 +93,7 @@ export default function PlaybackPage() {
         </Card>
       </div>
 
-      {showFeedback && meditation && (
+      {showFeedback && (
         <FeedbackForm
           storageObjectId={meditation.id}
           onComplete={() => {
