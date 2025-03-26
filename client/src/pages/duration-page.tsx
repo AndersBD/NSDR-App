@@ -1,18 +1,28 @@
 import { useLocation, useParams } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Clock } from "lucide-react";
+import { ChevronLeft, Clock, Loader2 } from "lucide-react";
+import { getDurationFolders } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 export default function DurationPage() {
   const [, setLocation] = useLocation();
   const { type } = useParams();
+  const { toast } = useToast();
 
-  const durations = [
-    { label: "10 min", value: 10 },
-    { label: "20 min", value: 20 },
-    { label: "30 min", value: 30 },
-    { label: "1 time", value: 60 }
-  ];
+  const { data: folders, isLoading, error } = useQuery({
+    queryKey: ['duration-folders'],
+    queryFn: getDurationFolders,
+  });
+
+  if (error) {
+    toast({
+      title: "Error",
+      description: "Failed to load meditation durations",
+      variant: "destructive",
+    });
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
@@ -31,15 +41,19 @@ export default function DurationPage() {
             <CardTitle className="text-2xl text-center">Vælg Varighed</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            {durations.map(({ label, value }) => (
+            {isLoading ? (
+              <div className="flex justify-center p-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : folders?.map((folder) => (
               <Button
-                key={value}
+                key={folder.duration}
                 size="lg"
                 className="w-full h-16 text-lg bg-white text-[#384c44] hover:bg-[#384c44] hover:text-white border-2 border-[#384c44] transition-colors"
-                onClick={() => setLocation(`/sessions/${type}/${value}`)}
+                onClick={() => setLocation(`/sessions/${type}/${folder.duration}`)}
               >
                 <Clock className="w-5 h-5 mr-2" />
-                {label}
+                {folder.duration} min
               </Button>
             ))}
           </CardContent>
