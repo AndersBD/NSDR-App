@@ -49,10 +49,20 @@ async function fetchAudioFiles() {
   return allFiles;
 }
 
-async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+// Store files in database for easy querying and relationships
+async function syncAudioFilesToDatabase() {
+  const audioFiles = await fetchAudioFiles();
+
+  for (const file of audioFiles) {
+    const meditation = {
+      title: file.fileName.replace('.mp3', ''),
+      duration: file.duration,
+      fileName: `${file.folder}/${file.fileName}`,
+      fileUrl: file.fileUrl,
+    };
+
+    await storage.createMeditation(meditation);
+  }
 }
 
 // Update the IStorage interface
@@ -104,20 +114,7 @@ export class MemStorage implements IStorage {
     console.log("Created default admin user:", user.username);
 
     // Create sample meditations from Supabase files
-    const audioFiles = await fetchAudioFiles();
-    const sampleMeditations: InsertMeditation[] = audioFiles.map(audio => ({
-      title: audio.fileName.replace('.mp3', '').split(' ').map(word =>
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      ).join(' '),
-      duration: audio.duration,
-      fileName: `${audio.folder}/${audio.fileName}`,
-      fileUrl: audio.fileUrl,
-    }));
-
-    // Create sample meditations
-    for (const meditation of sampleMeditations) {
-      await this.createMeditation(meditation);
-    }
+    await syncAudioFilesToDatabase();
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -171,6 +168,12 @@ export class MemStorage implements IStorage {
     this.feedback.set(id, newFeedback);
     return newFeedback;
   }
+}
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
 }
 
 export const storage = new MemStorage();
