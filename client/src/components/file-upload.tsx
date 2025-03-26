@@ -56,16 +56,17 @@ export function FileUpload() {
     },
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (formData: any) => {
     try {
       setUploading(true);
 
-      // Check if file is selected
-      if (!data.file || !data.file.length) {
+      // Get the file from the event
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (!fileInput?.files?.length) {
         throw new Error('Please select a file to upload');
       }
 
-      const file = data.file[0];
+      const file = fileInput.files[0];
 
       // Extract duration from filename (e.g., "20 min.wav" or "20min.mp3")
       const durationMatch = file.name.match(/(\d+)\s*min/i);
@@ -96,7 +97,7 @@ export function FileUpload() {
       }
 
       createMutation.mutate({
-        title: data.title || file.name.replace(/\.\w+$/, ''),
+        title: formData.title || file.name.replace(/\.\w+$/, ''),
         duration: durationMinutes * 60,
         fileName: `${folderName}/${file.name}`,
         fileUrl: urlData.publicUrl,
@@ -130,9 +131,6 @@ export function FileUpload() {
           <input
             type="file"
             accept="audio/mp3,audio/wav"
-            {...form.register("file", {
-              required: "Please select a file to upload"
-            })}
             className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 
                      file:rounded-md file:border-0 file:text-sm file:font-medium 
                      file:bg-primary file:text-primary-foreground 
