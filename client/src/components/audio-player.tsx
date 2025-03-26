@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, forwardRef } from "react";
-import { Meditation } from "@shared/schema";
+import { StorageFile } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Play, Pause, StopCircle } from "lucide-react";
 
 interface AudioPlayerProps {
-  meditation: Meditation;
+  meditation: StorageFile;
 }
 
 export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(
@@ -86,18 +86,26 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(
 
     return (
       <div className="space-y-8">
-        <audio ref={audioRef} src={meditation.fileUrl} preload="metadata" />
+        <audio ref={audioRef} src={meditation.audioUrl} preload="metadata" />
 
         <div className="aspect-video bg-[#384c44]/10 rounded-lg overflow-hidden mb-6">
-          <img
-            src={`https://api.dicebear.com/7.x/shapes/svg?seed=${meditation.title}`}
-            alt={meditation.title}
-            className="w-full h-full object-cover"
-          />
+          {meditation.imageUrl ? (
+            <img
+              src={meditation.imageUrl}
+              alt={meditation.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <img
+              src={`https://api.dicebear.com/7.x/shapes/svg?seed=${meditation.name}`}
+              alt={meditation.name}
+              className="w-full h-full object-contain opacity-50"
+            />
+          )}
         </div>
 
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-[#384c44]">{meditation.title}</h3>
+          <h3 className="text-lg font-medium text-[#384c44]">{meditation.name}</h3>
           <span className="text-sm text-[#667c73]">
             {formatTime(currentTime)} / {formatTime(meditation.duration)}
           </span>

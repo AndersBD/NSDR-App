@@ -102,7 +102,7 @@ export async function getMeditationsByDuration(durationPath: string): Promise<St
     if (error) throw error;
 
     // First, get all audio files
-    const audioFiles = files.filter(file => 
+    const audioFiles = files.filter(file =>
       file.name.endsWith('.mp3') || file.name.endsWith('.wav')
     );
 
@@ -124,7 +124,7 @@ export async function getMeditationsByDuration(durationPath: string): Promise<St
 
         // Look for matching image file
         const matchingImage = imageFiles.get(basename);
-        const imageUrl = matchingImage 
+        const imageUrl = matchingImage
           ? (await supabase.storage
               .from('lydfiler-til-nsdr')
               .getPublicUrl(`${durationPath}/${matchingImage.name}`)).data.publicUrl
@@ -194,4 +194,51 @@ export async function signUp(email: string, password: string) {
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
+}
+
+// Add new function to get meditation by storage ID
+export async function getMeditationByStorageId(id: string): Promise<StorageFile | null> {
+  try {
+    // First get the object details from storage.objects
+    const { data: storageObject, error: storageError } = await supabase
+      .from('storage.objects')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (storageError || !storageObject) {
+      console.error('Error getting storage object:', storageError);
+      return null;
+    }
+
+    // Get the folder path and file name
+    const pathParts = storageObject.name.split('/');
+    const fileName = pathParts[pathParts.length - 1];
+    const folderPath = pathParts.slice(0, -1).join('/');
+    const basename = fileName.replace(/\.\w+$/, '');
+
+    // Get audio URL
+    const { data: audioData } = await supabase.storage
+      .from('lydfiler-til-nsdr')
+      .getPublicUrl(storageObject.name);
+
+    // Look for matching image
+    const { data: imageData } = await supabase.storage
+      .from('lydfiler-til-nsdr')
+      .getPublicUrl(`${folderPath}/${basename}.jpg`);
+
+    const duration = parseInt(folderPath.match(/(\d+)/)?.[1] || '0');
+
+    return {
+      id: storageObject.id,
+      name: basename,
+      duration: duration * 60, // Convert to seconds
+      audioUrl: audioData.publicUrl,
+      imageUrl: imageData.publicUrl,
+      createdAt: storageObject.created_at
+    };
+  } catch (error: any) {
+    console.error('Error getting meditation:', error);
+    return null;
+  }
 }
