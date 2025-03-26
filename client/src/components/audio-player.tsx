@@ -7,12 +7,10 @@ import { forwardRef, useEffect, useRef, useState } from 'react';
 interface AudioPlayerProps {
   meditation: StorageFile;
   onEnded?: () => void;
+  autoPlay?: boolean;
 }
 
-export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(function AudioPlayer(
-  { meditation, onEnded },
-  ref
-) {
+export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(function AudioPlayer({ meditation, onEnded, autoPlay = false }, ref) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -84,15 +82,11 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
 
   return (
     <div className="space-y-8">
-      <audio ref={audioRef} src={meditation.audioUrl} preload="metadata" />
+      <audio ref={audioRef} src={meditation.audioUrl} preload="metadata" autoPlay={autoPlay} />
 
       <div className="aspect-video bg-[#384c44]/10 rounded-lg overflow-hidden mb-6">
         {meditation.imageUrl ? (
-          <img
-            src={meditation.imageUrl}
-            alt={meditation.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={meditation.imageUrl} alt={meditation.name} className="w-full h-full object-cover" />
         ) : (
           <img
             src={`https://api.dicebear.com/7.x/shapes/svg?seed=${meditation.name}`}
@@ -109,29 +103,14 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
         </span>
       </div>
 
-      <Slider
-        value={[currentTime]}
-        max={meditation.duration}
-        step={1}
-        onValueChange={handleSeek}
-        className="my-4"
-      />
+      <Slider value={[currentTime]} max={meditation.duration} step={1} onValueChange={handleSeek} className="my-4" />
 
       <div className="flex justify-center gap-4">
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={stopPlayback}
-          className="border-2 border-[#384c44] text-[#384c44] hover:bg-[#384c44] hover:text-white"
-        >
+        <Button size="lg" variant="outline" onClick={stopPlayback} className="border-2 border-[#384c44] text-[#384c44] hover:bg-[#384c44] hover:text-white">
           <StopCircle className="h-6 w-6" />
         </Button>
 
-        <Button
-          size="lg"
-          onClick={togglePlay}
-          className="bg-[#384c44] hover:bg-[#667c73] text-white"
-        >
+        <Button size="lg" onClick={togglePlay} className="bg-[#384c44] hover:bg-[#667c73] text-white">
           {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
         </Button>
       </div>

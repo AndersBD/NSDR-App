@@ -85,10 +85,10 @@ export default function PlaybackPage() {
 
         <Card className="border-2 border-[#384c44]">
           <CardHeader>
-            <CardTitle className="text-2xl text-center text-[#384c44]">{meditation.name}</CardTitle>
+            <CardTitle className="text-2xl text-center text-[#384c44]">Afspiller - {meditation.name}</CardTitle>
           </CardHeader>
           <CardContent>
-            <AudioPlayer meditation={meditation} ref={audioRef} onEnded={handleEnded} />
+            <AudioPlayer meditation={meditation} ref={audioRef} onEnded={handleEnded} autoPlay={true} />
           </CardContent>
         </Card>
       </div>
