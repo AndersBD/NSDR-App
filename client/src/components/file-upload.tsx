@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { insertMeditationSchema } from '@shared/schema';
 import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,61 +8,21 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { Loader2, Upload, CheckCircle2, XCircle } from 'lucide-react';
-import { uploadFile } from '@/lib/supabase';
+import { uploadMeditationFiles } from '@/lib/supabase';
 import { Progress } from '@/components/ui/progress';
 
 export function FileUpload() {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedAudioFile, setSelectedAudioFile] = useState<File | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [targetFolder, setTargetFolder] = useState<string | null>(null);
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
 
   const form = useForm({
-    resolver: zodResolver(insertMeditationSchema),
     defaultValues: {
       title: '',
-      fileName: '',
-      fileUrl: '',
-      duration: 0,
-    },
-  });
-
-  const createMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await fetch('/api/meditations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error || 'Failed to create meditation record');
-      }
-
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/meditations'] });
-      form.reset();
-      setSelectedFile(null);
-      setTargetFolder(null);
-      setUploadProgress(0);
-      setUploadStatus('success');
-      toast({
-        title: 'Success',
-        description: 'Meditation uploaded successfully',
-      });
-    },
-    onError: (error: Error) => {
-      setUploadStatus('error');
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
     },
   });
 
@@ -71,66 +30,78 @@ export function FileUpload() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    console.log('Selected file:', file.name); // Debug log
+    console.log('Selected file:', file.name);
 
-    setSelectedFile(file);
+    if (file.type.startsWith('audio/')) {
+      setSelectedAudioFile(file);
+      // Extract duration from filename
+      const durationMatch = file.name.match(/(\d+)\s*min/i);
+      if (durationMatch) {
+        const durationMinutes = parseInt(durationMatch[1]);
+        const folder = `${durationMinutes} minutter`;
+        console.log('Detected folder:', folder);
+        setTargetFolder(folder);
+      } else {
+        setTargetFolder(null);
+        toast({
+          title: 'Warning',
+          description: 'Filename must include duration (e.g., "NSDR 20 min.wav")',
+          variant: 'destructive',
+        });
+      }
+    } else if (file.type.startsWith('image/')) {
+      setSelectedImageFile(file);
+    }
+
     setUploadStatus('idle');
     setUploadProgress(0);
-
-    // Extract duration from filename
-    const durationMatch = file.name.match(/(\d+)\s*min/i);
-    if (durationMatch) {
-      const durationMinutes = parseInt(durationMatch[1]);
-      const folder = `${durationMinutes} minutter`;
-      console.log('Detected folder:', folder); // Debug log
-      setTargetFolder(folder);
-    } else {
-      setTargetFolder(null);
-      toast({
-        title: 'Warning',
-        description: 'Filename must include duration (e.g., "NSDR 20 min.wav")',
-        variant: 'destructive',
-      });
-    }
   };
 
   const onSubmit = async (formData: any) => {
     try {
-      if (!selectedFile || !targetFolder) {
-        throw new Error('Please select a valid file with duration in the filename');
+      if (!selectedAudioFile || !targetFolder) {
+        throw new Error('Please select a valid audio file with duration in the filename');
       }
 
       setUploading(true);
       setUploadStatus('uploading');
       setUploadProgress(10);
 
-      const durationMatch = selectedFile.name.match(/(\d+)\s*min/i);
+      const durationMatch = selectedAudioFile.name.match(/(\d+)\s*min/i);
       if (!durationMatch) {
         throw new Error('Filename must include duration (e.g., "NSDR 20 min.wav")');
       }
 
-      const durationMinutes = parseInt(durationMatch[1]);
-
       setUploadProgress(30);
 
-      console.log('Starting upload to folder:', targetFolder); // Debug log
+      console.log('Starting upload to folder:', targetFolder);
 
-      const uploadResult = await uploadFile(selectedFile, targetFolder);
-
-      setUploadProgress(70);
-
-      console.log('Upload successful:', uploadResult); // Debug log
-
-      await createMutation.mutateAsync({
-        title: formData.title || selectedFile.name.replace(/\.\w+$/, ''),
-        duration: durationMinutes * 60,
-        fileName: uploadResult.path,
-        fileUrl: uploadResult.url,
-      });
+      const uploadResult = await uploadMeditationFiles(
+        selectedAudioFile,
+        selectedImageFile,
+        targetFolder
+      );
 
       setUploadProgress(100);
+      setUploadStatus('success');
+
+      console.log('Upload successful:', uploadResult);
+
+      toast({
+        title: 'Success',
+        description: 'Files uploaded successfully',
+      });
+
+      // Reset form
+      form.reset();
+      setSelectedAudioFile(null);
+      setSelectedImageFile(null);
+      setTargetFolder(null);
+
+      // Refresh the meditation list
+      queryClient.invalidateQueries({ queryKey: ['/api/meditations'] });
     } catch (error: any) {
-      console.error('Upload error:', error); // Debug log
+      console.error('Upload error:', error);
       setUploadStatus('error');
       toast({
         title: 'Error',
@@ -170,11 +141,26 @@ export function FileUpload() {
             Upload an MP3 or WAV file with duration in the filename (e.g., "NSDR 20 min.wav").
             The file will be automatically placed in the correct duration folder.
           </p>
-          {selectedFile && targetFolder && (
+          {selectedAudioFile && targetFolder && (
             <p className="text-sm font-medium text-primary">
               File will be uploaded to folder: {targetFolder}
             </p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <input
+            type="file"
+            accept="image/jpeg,image/png"
+            onChange={handleFileChange}
+            className="w-full cursor-pointer file:mr-4 file:py-2 file:px-4 
+                     file:rounded-md file:border-0 file:text-sm file:font-medium 
+                     file:bg-primary file:text-primary-foreground 
+                     hover:file:bg-primary/90"
+          />
+          <p className="text-sm text-muted-foreground">
+            Optionally upload an image to be displayed with this meditation
+          </p>
         </div>
 
         {uploadStatus !== 'idle' && (
@@ -201,10 +187,10 @@ export function FileUpload() {
 
         <Button 
           type="submit" 
-          disabled={uploading || createMutation.isPending || !selectedFile || !targetFolder} 
+          disabled={uploading || !selectedAudioFile || !targetFolder} 
           className="w-full"
         >
-          {(uploading || createMutation.isPending) && (
+          {uploading && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
           <Upload className="mr-2 h-4 w-4" />
