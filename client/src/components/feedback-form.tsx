@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/use-auth";
-import { InsertFeedback } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { createFeedback } from "@/lib/supabase";
 
 interface FeedbackFormProps {
   meditationId: number;
@@ -26,20 +25,11 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
 
   const feedbackMutation = useMutation({
     mutationFn: async (wellbeingChange: number) => {
-      const feedback: InsertFeedback = {
-        meditationId,
-        wellbeingChange,
-      };
-      const res = await apiRequest("POST", "/api/feedback", feedback, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+      return await createFeedback({
+        meditation_id: meditationId,
+        wellbeing_change: wellbeingChange,
+        user_id: user?.id,
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to submit feedback");
-      }
-      return res.json();
     },
     onSuccess: () => {
       onComplete();
