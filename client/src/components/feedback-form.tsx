@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { createFeedback, getWellbeingOptions } from "@/lib/supabase";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { createFeedback, getWellbeingOptions } from '@/lib/supabase';
 
 interface FeedbackFormProps {
   meditationId: number;
@@ -16,28 +16,28 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
   // Fetch wellbeing options from the database
   const { data: wellbeingOptions, isLoading: isLoadingOptions } = useQuery({
     queryKey: ['/api/wellbeing-options'],
-    queryFn: getWellbeingOptions
+    queryFn: getWellbeingOptions,
   });
 
   const feedbackMutation = useMutation({
     mutationFn: async (wellbeingChange: number) => {
       return await createFeedback({
-        storage_object_id: meditationId, // Now expecting a storage object UUID
+        storage_object_id: meditationId.toString(), // Now expecting a storage object UUID
         wellbeing_change: wellbeingChange,
       });
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Thank you for your feedback!",
+        title: 'Success',
+        description: 'Thank you for your feedback!',
       });
       onComplete();
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -55,7 +55,8 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle className="text-2xl text-center text-[#384c44]">
-            Hvordan har din mentale trivsel ændret sig efter NSDR-meditationen sammenlignet med før sessionen?
+            Hvordan har din mentale trivsel ændret sig efter NSDR-meditationen sammenlignet med før
+            sessionen?
           </CardTitle>
         </CardHeader>
         <CardContent>

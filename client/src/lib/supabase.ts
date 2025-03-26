@@ -2,15 +2,11 @@ import { createClient } from '@supabase/supabase-js';
 import env from './env-config';
 import { Database } from '@/types/supabase';
 
-export const supabase = createClient<Database>(
-  env.SUPABASE_URL,
-  env.SUPABASE_KEY,
-  {
-    auth: {
-      persistSession: false // Since we're using our own auth system
-    }
-  }
-);
+export const supabase = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_KEY, {
+  auth: {
+    persistSession: false, // Since we're using our own auth system
+  },
+});
 
 // Database types
 export type Meditation = {
@@ -47,11 +43,7 @@ export async function getMeditations() {
 }
 
 export async function getMeditation(id: number) {
-  const { data, error } = await supabase
-    .from('meditations')
-    .select('*')
-    .eq('id', id)
-    .single();
+  const { data, error } = await supabase.from('meditations').select('*').eq('id', id).single();
 
   if (error) throw error;
   return data;
@@ -59,10 +51,7 @@ export async function getMeditation(id: number) {
 
 // Helper function to get wellbeing options
 export async function getWellbeingOptions() {
-  const { data, error } = await supabase
-    .from('wellbeing_options')
-    .select('*')
-    .order('value');
+  const { data, error } = await supabase.from('wellbeing_options').select('*').order('value');
 
   if (error) throw error;
   return data;
@@ -70,14 +59,10 @@ export async function getWellbeingOptions() {
 
 // Helper functions for feedback
 export async function createFeedback(feedback: {
-  meditation_id: number;
+  storage_object_id: string;
   wellbeing_change: number;
 }) {
-  const { data, error } = await supabase
-    .from('feedback')
-    .insert(feedback)
-    .select()
-    .single();
+  const { data, error } = await supabase.from('feedback').insert(feedback).select().single();
 
   if (error) throw error;
   return data;
@@ -114,16 +99,20 @@ export async function uploadFile(file: File, folder: string) {
       .from('lydfiler-til-nsdr')
       .upload(`${folder}/${file.name}`, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: false,
       });
 
     if (error) {
       console.error('Storage upload error:', error);
       if (error.message.includes('row-level security policy')) {
-        throw new Error('Storage permissions not configured. Please check Supabase storage bucket policies.');
+        throw new Error(
+          'Storage permissions not configured. Please check Supabase storage bucket policies.'
+        );
       }
       if (error.message.includes('duplicate')) {
-        throw new Error('A file with this name already exists. Please rename the file or use a different one.');
+        throw new Error(
+          'A file with this name already exists. Please rename the file or use a different one.'
+        );
       }
       if (error.message.includes('permission')) {
         throw new Error('Storage permission denied. Please check bucket permissions in Supabase.');
@@ -142,7 +131,7 @@ export async function uploadFile(file: File, folder: string) {
 
     return {
       path: `${folder}/${file.name}`,
-      url: urlData.publicUrl
+      url: urlData.publicUrl,
     };
   } catch (error: any) {
     console.error('Upload error:', error);
