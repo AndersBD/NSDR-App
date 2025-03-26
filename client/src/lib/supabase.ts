@@ -19,7 +19,6 @@ export type Meditation = {
 
 export type Feedback = {
   id: number;
-  user_id?: string;
   meditation_id: number;
   wellbeing_change: number;
   created_at: string;
@@ -47,9 +46,12 @@ export async function getMeditation(id: number) {
 export async function createFeedback(feedback: {
   meditation_id: number;
   wellbeing_change: number;
-  user_id?: string;
 }) {
-  const { data, error } = await supabase.from('feedback').insert(feedback).select().single();
+  const { data, error } = await supabase
+    .from('feedback')
+    .insert(feedback)
+    .select()
+    .single();
 
   if (error) throw error;
   return data;

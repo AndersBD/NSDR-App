@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/use-auth";
 import { createFeedback } from "@/lib/supabase";
 
 interface FeedbackFormProps {
@@ -20,19 +19,13 @@ const WELLBEING_OPTIONS = [
 ];
 
 export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const feedbackMutation = useMutation({
     mutationFn: async (wellbeingChange: number) => {
-      if (!user) {
-        throw new Error("You must be logged in to submit feedback");
-      }
-
       return await createFeedback({
         meditation_id: meditationId,
         wellbeing_change: wellbeingChange,
-        user_id: user.id
       });
     },
     onSuccess: () => {
