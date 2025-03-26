@@ -1,14 +1,14 @@
-import { useParams, useLocation } from 'wouter';
-import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronLeft, Loader2 } from 'lucide-react';
 import { AudioPlayer } from '@/components/audio-player';
-import { useEffect, useRef, useState } from 'react';
 import { FeedbackForm } from '@/components/feedback-form';
 import { MindfulTransition } from '@/components/mindful-transition';
-import { getMeditationByStorageId } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { getMeditationByStorageId } from '@/lib/supabase';
+import { useQuery } from '@tanstack/react-query';
+import { ChevronLeft, Loader2 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { useLocation, useParams } from 'wouter';
 
 export default function PlaybackPage() {
   const { id } = useParams();
@@ -18,30 +18,39 @@ export default function PlaybackPage() {
   const [showTransition, setShowTransition] = useState(false);
   const { toast } = useToast();
 
-  const { data: meditation, isLoading, error } = useQuery({
+  const {
+    data: meditation,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['meditation', id],
     queryFn: () => getMeditationByStorageId(id!),
-    retry: 1
+    retry: 1,
   });
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  // useEffect(() => {
+  //   const audio = audioRef.current;
+  //   if (!audio) return;
 
-    const handleEnded = () => {
-      console.log('Audio playback ended, showing feedback form');
-      setShowFeedback(true);
-    };
+  //   const handleEnded = () => {
+  //     console.log('Audio playback ended, showing feedback form');
+  //     setShowFeedback(true);
+  //   };
 
-    audio.addEventListener('ended', handleEnded);
-    return () => audio.removeEventListener('ended', handleEnded);
-  }, []);
+  //   audio.addEventListener('ended', handleEnded);
+  //   return () => audio.removeEventListener('ended', handleEnded);
+  // }, []);
+
+  const handleEnded = () => {
+    console.log('Audio playback ended, showing feedback form');
+    setShowFeedback(true);
+  };
 
   if (error) {
     toast({
-      title: "Error",
-      description: "Failed to load meditation session",
-      variant: "destructive",
+      title: 'Error',
+      description: 'Failed to load meditation session',
+      variant: 'destructive',
     });
     console.error('Meditation load error:', error);
   }
@@ -58,11 +67,7 @@ export default function PlaybackPage() {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
         <h2 className="text-xl text-[#384c44] mb-4">Meditation not found</h2>
-        <Button
-          variant="ghost"
-          onClick={() => setLocation('/')}
-          className="text-[#384c44] hover:text-[#667c73]"
-        >
+        <Button variant="ghost" onClick={() => setLocation('/')} className="text-[#384c44] hover:text-[#667c73]">
           <ChevronLeft className="w-4 h-4 mr-2" />
           Go back home
         </Button>
@@ -73,23 +78,17 @@ export default function PlaybackPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-lg space-y-6">
-        <Button
-          variant="ghost"
-          className="mb-4 text-[#384c44] hover:text-[#667c73]"
-          onClick={() => setLocation('/')}
-        >
+        <Button variant="ghost" className="mb-4 text-[#384c44] hover:text-[#667c73]" onClick={() => setLocation('/')}>
           <ChevronLeft className="w-4 h-4 mr-2" />
           Afbryd session
         </Button>
 
         <Card className="border-2 border-[#384c44]">
           <CardHeader>
-            <CardTitle className="text-2xl text-center text-[#384c44]">
-              {meditation.name}
-            </CardTitle>
+            <CardTitle className="text-2xl text-center text-[#384c44]">{meditation.name}</CardTitle>
           </CardHeader>
           <CardContent>
-            <AudioPlayer meditation={meditation} ref={audioRef} />
+            <AudioPlayer meditation={meditation} ref={audioRef} onEnded={handleEnded} />
           </CardContent>
         </Card>
       </div>

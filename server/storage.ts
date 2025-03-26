@@ -1,23 +1,29 @@
-import { User, InsertUser, Meditation, InsertMeditation, Feedback, InsertFeedback } from "@shared/schema";
-import session from "express-session";
-import createMemoryStore from "memorystore";
-import { scrypt, randomBytes } from "crypto";
-import { promisify } from "util";
-import { createClient } from "@supabase/supabase-js";
-
+import {
+  Feedback,
+  InsertFeedback,
+  InsertMeditation,
+  InsertUser,
+  Meditation,
+  User,
+} from '@shared/schema';
+import { createClient } from '@supabase/supabase-js';
+import { randomBytes, scrypt } from 'crypto';
+import dotenv from 'dotenv';
+import session from 'express-session';
+import createMemoryStore from 'memorystore';
+import { promisify } from 'util';
+dotenv.config();
 const MemoryStore = createMemoryStore(session);
 const scryptAsync = promisify(scrypt);
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
-  throw new Error("Missing Supabase credentials");
+  throw new Error('Missing Supabase credentials');
 }
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 function getPublicUrl(fileName: string, folder: string): string {
-  const { data } = supabase.storage
-    .from('lydfiler-til-nsdr')
-    .getPublicUrl(`${folder}/${fileName}`);
+  const { data } = supabase.storage.from('lydfiler-til-nsdr').getPublicUrl(`${folder}/${fileName}`);
   return data.publicUrl;
 }
 
@@ -26,9 +32,7 @@ async function fetchAudioFiles() {
   let allFiles = [];
 
   for (const duration of durations) {
-    const { data, error } = await supabase.storage
-      .from('lydfiler-til-nsdr')
-      .list(duration);
+    const { data, error } = await supabase.storage.from('lydfiler-til-nsdr').list(duration);
 
     if (error) {
       console.error(`Error fetching ${duration} files:`, error);
@@ -36,17 +40,18 @@ async function fetchAudioFiles() {
     }
 
     // Filter out placeholder files and get only mp3 files
-    const mp3Files = data.filter(file => 
-      file.name.endsWith('.mp3') && 
-      !file.name.startsWith('.') && 
-      !file.name.includes('emptyFolderPlaceholder')
+    const mp3Files = data.filter(
+      (file) =>
+        file.name.endsWith('.mp3') &&
+        !file.name.startsWith('.') &&
+        !file.name.includes('emptyFolderPlaceholder')
     );
 
-    const files = mp3Files.map(file => ({
+    const files = mp3Files.map((file) => ({
       fileName: file.name,
       fileUrl: getPublicUrl(file.name, duration),
       duration: parseInt(duration.split(' ')[0]) * 60, // Convert minutes to seconds
-      folder: duration
+      folder: duration,
     }));
 
     allFiles = [...allFiles, ...files];
@@ -82,7 +87,7 @@ export interface IStorage {
   createMeditation(meditation: InsertMeditation): Promise<Meditation>;
   deleteMeditation(id: number): Promise<void>;
 
-  createFeedback(feedback: Omit<InsertFeedback & { userId?: number }, "id">): Promise<Feedback>;
+  createFeedback(feedback: Omit<InsertFeedback & { userId?: number }, 'id'>): Promise<Feedback>;
 
   sessionStore: session.Store;
 }
@@ -113,11 +118,11 @@ export class MemStorage implements IStorage {
 
   private async createDefaultAdmin() {
     const adminUser: InsertUser = {
-      username: "admin",
-      password: await hashPassword("admin"), // Default password: admin
+      username: 'admin',
+      password: await hashPassword('admin'), // Default password: admin
     };
     const user = await this.createUser(adminUser, true);
-    console.log("Created default admin user:", user.username);
+    console.log('Created default admin user:', user.username);
 
     // Create sample meditations from Supabase files
     await syncAudioFilesToDatabase();
@@ -128,9 +133,7 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    return Array.from(this.users.values()).find((user) => user.username === username);
   }
 
   async createUser(insertUser: InsertUser, isAdmin = false): Promise<User> {
@@ -164,7 +167,9 @@ export class MemStorage implements IStorage {
   }
 
   // Update the createFeedback implementation
-  async createFeedback(feedback: Omit<InsertFeedback & { userId?: number }, "id">): Promise<Feedback> {
+  async createFeedback(
+    feedback: Omit<InsertFeedback & { userId?: number }, 'id'>
+  ): Promise<Feedback> {
     const id = this.currentFeedbackId++;
     const newFeedback: Feedback = {
       ...feedback,
@@ -177,9 +182,9 @@ export class MemStorage implements IStorage {
 }
 
 async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
+  const salt = randomBytes(16).toString('hex');
   const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+  return `${buf.toString('hex')}.${salt}`;
 }
 
 export const storage = new MemStorage();
