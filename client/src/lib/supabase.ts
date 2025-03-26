@@ -101,33 +101,46 @@ export async function getMeditationsByDuration(durationPath: string): Promise<St
 
     if (error) throw error;
 
-    return await Promise.all(
+    // First, get all audio files
+    const audioFiles = files.filter(file => 
+      file.name.endsWith('.mp3') || file.name.endsWith('.wav')
+    );
+
+    // Create a map of image files for quick lookup
+    const imageFiles = new Map(
       files
-        .filter(file => file.name.endsWith('.mp3') || file.name.endsWith('.wav'))
-        .map(async (file) => {
-          const basename = file.name.replace(/\.\w+$/, '');
+        .filter(file => file.name.endsWith('.jpg') || file.name.endsWith('.png'))
+        .map(file => [file.name.replace(/\.(jpg|png)$/, ''), file])
+    );
 
-          // Get audio URL
-          const { data: audioData } = await supabase.storage
-            .from('lydfiler-til-nsdr')
-            .getPublicUrl(`${durationPath}/${file.name}`);
+    return await Promise.all(
+      audioFiles.map(async (file) => {
+        const basename = file.name.replace(/\.\w+$/, '');
 
-          // Check for matching image
-          const { data: imageData } = await supabase.storage
-            .from('lydfiler-til-nsdr')
-            .getPublicUrl(`${durationPath}/${basename}.jpg`);
+        // Get audio URL
+        const { data: audioData } = await supabase.storage
+          .from('lydfiler-til-nsdr')
+          .getPublicUrl(`${durationPath}/${file.name}`);
 
-          const duration = parseInt(durationPath.match(/(\d+)/)?.[1] || '0');
+        // Look for matching image file
+        const matchingImage = imageFiles.get(basename);
+        const imageUrl = matchingImage 
+          ? (await supabase.storage
+              .from('lydfiler-til-nsdr')
+              .getPublicUrl(`${durationPath}/${matchingImage.name}`)).data.publicUrl
+          : null;
 
-          return {
-            id: file.id,
-            name: basename,
-            duration: duration * 60, // Convert to seconds
-            audioUrl: audioData.publicUrl,
-            imageUrl: imageData.publicUrl,
-            createdAt: file.created_at
-          };
-        })
+        const duration = parseInt(durationPath.match(/(\d+)/)?.[1] || '0');
+
+        return {
+          id: file.id,
+          name: basename,
+          duration: duration * 60, // Convert to seconds
+          audioUrl: audioData.publicUrl,
+          imageUrl: imageUrl,
+          createdAt: file.created_at
+        };
+      })
     );
   } catch (error: any) {
     console.error('Error getting meditations:', error);
