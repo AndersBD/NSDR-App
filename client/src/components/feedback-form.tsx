@@ -25,13 +25,21 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
 
   const feedbackMutation = useMutation({
     mutationFn: async (wellbeingChange: number) => {
+      if (!user) {
+        throw new Error("You must be logged in to submit feedback");
+      }
+
       return await createFeedback({
         meditation_id: meditationId,
         wellbeing_change: wellbeingChange,
-        user_id: user?.id,
+        user_id: user.id
       });
     },
     onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Thank you for your feedback!",
+      });
       onComplete();
     },
     onError: (error: Error) => {
