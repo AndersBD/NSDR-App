@@ -1,25 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { createFeedback } from "@/lib/supabase";
+import { createFeedback, getWellbeingOptions } from "@/lib/supabase";
 
 interface FeedbackFormProps {
   meditationId: number;
   onComplete: () => void;
 }
 
-const WELLBEING_OPTIONS = [
-  { value: -2, label: "Meget værre" },
-  { value: -1, label: "Lidt værre" },
-  { value: 0, label: "Ingen ændring" },
-  { value: 1, label: "Lidt bedre" },
-  { value: 2, label: "Meget bedre" },
-];
-
 export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
   const { toast } = useToast();
+
+  // Fetch wellbeing options from the database
+  const { data: wellbeingOptions, isLoading: isLoadingOptions } = useQuery({
+    queryKey: ['/api/wellbeing-options'],
+    queryFn: getWellbeingOptions
+  });
 
   const feedbackMutation = useMutation({
     mutationFn: async (wellbeingChange: number) => {
@@ -44,6 +42,14 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
     },
   });
 
+  if (isLoadingOptions) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-white/90 z-50">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-white/90 z-50">
       <Card className="w-full max-w-lg">
@@ -54,7 +60,7 @@ export function FeedbackForm({ meditationId, onComplete }: FeedbackFormProps) {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
-            {WELLBEING_OPTIONS.map((option) => (
+            {wellbeingOptions?.map((option) => (
               <Button
                 key={option.value}
                 variant="outline"

@@ -17,6 +17,12 @@ export type Meditation = {
   created_at: string;
 };
 
+export type WellbeingOption = {
+  value: number;
+  label: string;
+  description: string;
+};
+
 export type Feedback = {
   id: number;
   meditation_id: number;
@@ -36,7 +42,22 @@ export async function getMeditations() {
 }
 
 export async function getMeditation(id: number) {
-  const { data, error } = await supabase.from('meditations').select('*').eq('id', id).single();
+  const { data, error } = await supabase
+    .from('meditations')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Helper function to get wellbeing options
+export async function getWellbeingOptions() {
+  const { data, error } = await supabase
+    .from('wellbeing_options')
+    .select('*')
+    .order('value');
 
   if (error) throw error;
   return data;
