@@ -1,13 +1,13 @@
-import { useParams, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { Meditation } from "@shared/schema";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft } from "lucide-react";
-import { AudioPlayer } from "@/components/audio-player";
-import { useEffect, useRef, useState } from "react";
-import { FeedbackForm } from "@/components/feedback-form";
-import { MindfulTransition } from "@/components/mindful-transition";
+import { useParams, useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { Meditation } from '@shared/schema';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChevronLeft } from 'lucide-react';
+import { AudioPlayer } from '@/components/audio-player';
+import { useEffect, useRef, useState } from 'react';
+import { FeedbackForm } from '@/components/feedback-form';
+import { MindfulTransition } from '@/components/mindful-transition';
 
 export default function PlaybackPage() {
   const { id } = useParams();
@@ -17,11 +17,11 @@ export default function PlaybackPage() {
   const [showTransition, setShowTransition] = useState(false);
 
   const { data: meditations } = useQuery<Meditation[]>({
-    queryKey: ["/api/meditations"],
+    queryKey: ['/api/meditations'],
   });
 
-  const meditation = meditations?.find(m => m.id === parseInt(id!));
-
+  const meditation = meditations?.find((m) => m.id === parseInt(id!));
+  console.log(meditation);
   // Handle session completion
   useEffect(() => {
     const audio = audioRef.current;
@@ -31,8 +31,8 @@ export default function PlaybackPage() {
       setShowFeedback(true);
     };
 
-    audio.addEventListener("ended", handleEnded);
-    return () => audio.removeEventListener("ended", handleEnded);
+    audio.addEventListener('ended', handleEnded);
+    return () => audio.removeEventListener('ended', handleEnded);
   }, []);
 
   if (!meditation) {
@@ -45,7 +45,7 @@ export default function PlaybackPage() {
         <Button
           variant="ghost"
           className="mb-4 text-[#384c44] hover:text-[#667c73]"
-          onClick={() => setLocation("/")}
+          onClick={() => setLocation('/')}
         >
           <ChevronLeft className="w-4 h-4 mr-2" />
           Afbryd session
@@ -53,9 +53,7 @@ export default function PlaybackPage() {
 
         <Card className="border-2 border-[#384c44]">
           <CardHeader>
-            <CardTitle className="text-2xl text-center text-[#384c44]">
-              Afspiller...
-            </CardTitle>
+            <CardTitle className="text-2xl text-center text-[#384c44]">Afspiller...</CardTitle>
           </CardHeader>
           <CardContent>
             <AudioPlayer meditation={meditation} ref={audioRef} />
@@ -65,7 +63,7 @@ export default function PlaybackPage() {
 
       {showFeedback && meditation && (
         <FeedbackForm
-          storageObjectId = {meditation.storageObjectId}
+          storageObjectId={meditation.storageObjectId}
           onComplete={() => {
             setShowFeedback(false);
             setShowTransition(true);
@@ -73,9 +71,7 @@ export default function PlaybackPage() {
         />
       )}
 
-      {showTransition && (
-        <MindfulTransition onComplete={() => setLocation("/")} />
-      )}
+      {showTransition && <MindfulTransition onComplete={() => setLocation('/')} />}
     </div>
   );
 }

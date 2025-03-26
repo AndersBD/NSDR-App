@@ -15,7 +15,7 @@ export type Meditation = {
   duration: number; // in seconds
   file_name: string;
   file_url: string;
-  storage_object_id: string;
+  storage_object_id: string | null;
   created_at: string;
 };
 
