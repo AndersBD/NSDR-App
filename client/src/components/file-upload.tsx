@@ -6,14 +6,14 @@ import { Form } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 import { Loader2, Upload, CheckCircle2, XCircle } from 'lucide-react';
 import { uploadFile } from '@/lib/supabase';
 import { Progress } from '@/components/ui/progress';
-import { useAuth } from '@/hooks/use-auth';
 
 export function FileUpload() {
   const { toast } = useToast();
-  const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -27,6 +27,43 @@ export function FileUpload() {
       fileName: '',
       fileUrl: '',
       duration: 0,
+    },
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch('/api/meditations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error || 'Failed to create meditation record');
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/meditations'] });
+      form.reset();
+      setSelectedFile(null);
+      setTargetFolder(null);
+      setUploadProgress(0);
+      setUploadStatus('success');
+      toast({
+        title: 'Success',
+        description: 'Meditation uploaded successfully',
+      });
+    },
+    onError: (error: Error) => {
+      setUploadStatus('error');
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     },
   });
 
@@ -59,10 +96,6 @@ export function FileUpload() {
 
   const onSubmit = async (formData: any) => {
     try {
-      if (!user?.isAdmin) {
-        throw new Error('You must be logged in as an admin to upload meditations');
-      }
-
       if (!selectedFile || !targetFolder) {
         throw new Error('Please select a valid file with duration in the filename');
       }
@@ -76,28 +109,26 @@ export function FileUpload() {
         throw new Error('Filename must include duration (e.g., "NSDR 20 min.wav")');
       }
 
+      const durationMinutes = parseInt(durationMatch[1]);
+
       setUploadProgress(30);
 
       console.log('Starting upload to folder:', targetFolder); // Debug log
 
       const uploadResult = await uploadFile(selectedFile, targetFolder);
 
-      setUploadProgress(100);
-      setUploadStatus('success');
+      setUploadProgress(70);
 
       console.log('Upload successful:', uploadResult); // Debug log
 
-      toast({
-        title: 'Success',
-        description: 'Meditation uploaded successfully',
+      await createMutation.mutateAsync({
+        title: formData.title || selectedFile.name.replace(/\.\w+$/, ''),
+        duration: durationMinutes * 60,
+        fileName: uploadResult.path,
+        fileUrl: uploadResult.url,
       });
 
-      // Reset form
-      form.reset();
-      setSelectedFile(null);
-      setTargetFolder(null);
-      setUploadProgress(0);
-
+      setUploadProgress(100);
     } catch (error: any) {
       console.error('Upload error:', error); // Debug log
       setUploadStatus('error');
@@ -170,21 +201,15 @@ export function FileUpload() {
 
         <Button 
           type="submit" 
-          disabled={uploading || !selectedFile || !targetFolder || !user?.isAdmin} 
+          disabled={uploading || createMutation.isPending || !selectedFile || !targetFolder} 
           className="w-full"
         >
-          {uploading && (
+          {(uploading || createMutation.isPending) && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
           <Upload className="mr-2 h-4 w-4" />
           Upload Meditation
         </Button>
-
-        {!user?.isAdmin && (
-          <p className="text-sm text-red-500 mt-2">
-            You must be logged in as an admin to upload meditations
-          </p>
-        )}
       </form>
     </Form>
   );

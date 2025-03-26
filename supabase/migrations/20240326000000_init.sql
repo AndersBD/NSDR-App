@@ -86,11 +86,10 @@ begin
       file_name,
       file_url
     ) values (
-      -- Extract title from filename (remove extension)
-      regexp_replace(NEW.name, '\.[^.]*$', ''),
-      -- Extract duration from path or filename (e.g., '20 min' -> 1200 seconds)
-      (regexp_match(coalesce(NEW.name, NEW.path), '(\d+)\s*min'))[1]::integer * 60,
-      NEW.name,
+      replace(NEW.name, '.mp3', ''),
+      -- Extract duration from path (e.g., '10 minutter' -> 600 seconds)
+      (regexp_match(NEW.path, '^(\d+)\s+minutter'))[1]::integer * 60,
+      NEW.path || '/' || NEW.name,
       storage.url(NEW.path || '/' || NEW.name)
     );
   end if;
@@ -99,9 +98,8 @@ end;
 $$;
 
 -- Create trigger on storage changes
-drop trigger if exists sync_meditations_trigger on storage.objects;
-create trigger sync_meditations_trigger
+create or replace trigger sync_meditations_trigger
 after insert on storage.objects
 for each row
-when (NEW.bucket_id = 'lydfiler-til-nsdr' and (NEW.name like '%.mp3' or NEW.name like '%.wav'))
+when (NEW.bucket_id = 'lydfiler-til-nsdr' and NEW.name like '%.mp3')
 execute function sync_meditations_from_storage();
