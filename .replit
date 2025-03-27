@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "bash", "web", "postgresql-16"]
+modules = ["nodejs-20", "bash", "web"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
@@ -11,40 +11,20 @@ run = ["npm", "run", "start"]
 build = ["npm", "run", "build"]
 
 [[ports]]
-localPort = 5000
+localPort = 5173
 externalPort = 80
+
+[env]
+VITE_SUPABASE_URL = "$VITE_SUPABASE_URL"
+VITE_SUPABASE_KEY = "$VITE_SUPABASE_KEY"
 
 [workflows]
 runButton = "Dev Server"
 
 [[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start application"
-
-[[workflows.workflow]]
-name = "Start application"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-waitForPort = 5000
-
-[[workflows.workflow]]
 name = "Dev Server"
-author = 40650756
 mode = "sequential"
+author = 40650756
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
