@@ -8,9 +8,7 @@
     "build": "vite build",
     "start": "vite preview",
     "check": "tsc",
-    "db:push": "drizzle-kit push",
-    "format:check": "prettier --check \"client/src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "format": "prettier --write \"client/src/**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
