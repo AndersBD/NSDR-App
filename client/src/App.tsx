@@ -12,6 +12,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { Route, Switch } from 'wouter';
 import env from './lib/env-config';
 import { queryClient } from './lib/queryClient';
+import StatsPage from './pages/stats-page';
 
 const supabaseClient = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
 
@@ -20,6 +21,7 @@ function Router() {
     <Switch>
       {/* Welcome page doesn't need the standard layout */}
       <Route path="/" component={WelcomePage} />
+      <Route path="stats" component={StatsPage} />
 
       {/* All other pages use the AppLayout */}
       <LayoutRoute layout={AppLayout} path="/duration/:type" component={DurationPage} />

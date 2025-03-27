@@ -131,7 +131,7 @@ export async function getMeditationsByDuration(durationPath: string): Promise<St
 
 // Helper function to get wellbeing options
 export async function getWellbeingOptions() {
-  const { data, error } = await supabase.from('wellbeing_options').select('*').order('value');
+  const { data, error } = await supabase.from('wellbeing_options').select('*').order('value', { ascending: true });
 
   if (error) throw error;
   return data;
@@ -239,4 +239,63 @@ export async function getMeditationByStorageId(id: string): Promise<StorageFile 
     console.error('Error getting meditation:', error);
     throw error;
   }
+}
+
+// Get feedback stats by date range
+export async function getFeedbackStats(timeRange?: 'week' | 'month' | 'year' | 'all') {
+  let query = supabase.from('feedback').select(`
+    id, 
+    wellbeing_change,
+    created_at,
+    storage_object_id,
+    wellbeing_options (
+      label
+    )
+  `);
+
+  // Apply date filtering if timeRange is specified
+  if (timeRange && timeRange !== 'all') {
+    const now = new Date();
+    let startDate;
+
+    switch (timeRange) {
+      case 'week':
+        startDate = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case 'month':
+        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case 'year':
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+    }
+
+    query = query.gte('created_at', startDate.toISOString());
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data;
+}
+
+// Get meditation details for all meditation IDs mentioned in feedback
+export async function getMeditationsForFeedback(feedbackData: any[]) {
+  // Extract unique meditation IDs
+  const meditationIds = Array.from(new Set(feedbackData.map((item) => item.storage_object_id)));
+
+  // Fetch detailed information for each meditation
+  const meditations = await Promise.all(
+    meditationIds.map(async (id) => {
+      try {
+        return await getMeditationByStorageId(id);
+      } catch (e) {
+        console.error(`Error fetching meditation ${id}:`, e);
+        return null;
+      }
+    })
+  );
+
+  // Create a lookup map
+  return Object.fromEntries(meditations.filter(Boolean).map((meditation) => [meditation!.id, meditation]));
 }
