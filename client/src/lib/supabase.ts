@@ -138,13 +138,6 @@ export async function getWellbeingOptions() {
 }
 
 // Helper functions for feedback
-// export async function createFeedback(feedback: { storage_object_id: string; wellbeing_change: number }) {
-//   const { data, error } = await supabase.from('feedback').insert(feedback).select().single();
-
-//   if (error) throw error;
-//   return data;
-// }
-
 export async function createFeedback(feedback: { storage_object_id: string; wellbeing_change: number }) {
   const { data, error } = await supabase.rpc('insert_feedback', {
     object_id: feedback.storage_object_id,
