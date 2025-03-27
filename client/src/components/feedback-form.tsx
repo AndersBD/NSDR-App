@@ -1,9 +1,11 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createFeedback, getWellbeingOptions } from '@/lib/supabase';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 
 interface FeedbackFormProps {
   storageObjectId: string;
@@ -12,6 +14,7 @@ interface FeedbackFormProps {
 
 export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps) {
   const { toast } = useToast();
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
 
   // Fetch wellbeing options from the database
   const { data: wellbeingOptions, isLoading: isLoadingOptions } = useQuery({
@@ -28,8 +31,8 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
     },
     onSuccess: () => {
       toast({
-        title: 'Success',
-        description: 'Thank you for your feedback!',
+        title: 'Tak for din feedback',
+        description: 'Din feedback er blevet registreret.',
       });
       onComplete();
     },
@@ -44,38 +47,42 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
 
   if (isLoadingOptions) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-white/90 z-50">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="fixed inset-0 flex items-center justify-center bg-white/98 backdrop-blur-md z-[500]">
+        <div className="w-16 h-16 border-4 border-meditation-primary/20 border-t-meditation-primary rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white/90 z-50">
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center text-[#384c44]">
-            Hvordan har din mentale trivsel ændret sig efter NSDR-meditationen sammenlignet med før
-            sessionen?
-          </CardTitle>
+    <div className="fixed inset-0 flex items-center justify-center bg-white/98 backdrop-blur-md z-[500] transition-all duration-300 animate-fadeIn p-4">
+      <Card className="w-full max-w-lg border-2 border-meditation-primary/20 shadow-lg">
+        <CardHeader className="meditation-header rounded-t-lg">
+          <CardTitle className="text-2xl text-center ">Hvordan har din mentale trivsel ændret sig efter meditationen sammenlignet med før sessionen?</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="grid gap-4">
             {wellbeingOptions?.map((option) => (
               <Button
                 key={option.value}
                 variant="outline"
-                className="h-16 text-lg border-2 border-[#384c44] text-[#384c44] hover:bg-[#384c44] hover:text-white"
-                onClick={() => feedbackMutation.mutate(option.value)}
+                className={`h-16 text-lg border-2 transition-all duration-200 ${
+                  selectedOption === option.value
+                    ? 'bg-meditation-primary/90 text-white border-meditation-primary hover:bg-meditation-primary/90'
+                    : 'border-meditation-primary/80 text-meditation-primary hover:bg-meditation-primary/80'
+                }`}
+                onClick={() => {
+                  setSelectedOption(option.value);
+                  // Submit feedback immediately after selection
+                  feedbackMutation.mutate(option.value);
+                }}
                 disabled={feedbackMutation.isPending}
               >
-                {feedbackMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : null}
                 {option.label}
               </Button>
             ))}
           </div>
+
+          <p className="text-center text-meditation-secondary mt-6 italic">Din feedback hjælper os med at forbedre vores meditationer</p>
         </CardContent>
       </Card>
     </div>
