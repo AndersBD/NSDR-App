@@ -13,6 +13,7 @@ build = ["npm", "run", "build"]
 [[ports]]
 localPort = 5173
 externalPort = 80
+exposeLocalhost = true
 
 [env]
 VITE_SUPABASE_URL = "$VITE_SUPABASE_URL"
