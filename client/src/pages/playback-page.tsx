@@ -1,5 +1,6 @@
 'use client';
 
+import { AnimatedContent } from '@/components/animation/animated-content';
 import { AudioPlayer } from '@/components/audio-player';
 import { FeedbackForm } from '@/components/feedback-form';
 import { MindfulTransition } from '@/components/mindful-transition';
@@ -110,7 +111,6 @@ export default function PlaybackPage() {
           <span className="text-sm text-meditation-secondary">Brug gerne høretelefoner</span>
         </div>
       </div>
-
       <Card className="meditation-card overflow-hidden mt-4">
         <CardHeader className="meditation-header pb-4 rounded-t-md">
           <CardTitle className="text-2xl text-center">Afspiller - {meditation.name}</CardTitle>
@@ -136,25 +136,32 @@ export default function PlaybackPage() {
           </div>
         </CardContent>
       </Card>
+      {/* Feedback form */}
+      <AnimatedContent isVisible={showFeedback} className="fixed inset-0 z-10 flex items-center justify-center bg-white/95">
+        <div className="w-full max-w-lg p-6 bg-white rounded-xl shadow-lg border-2 border-meditation-primary/20 transition-all duration-300 transform">
+          <FeedbackForm
+            storageObjectId={meditation!.id}
+            onComplete={() => {
+              setShowFeedback(false);
 
-      {showFeedback && (
-        <FeedbackForm
-          storageObjectId={meditation!.id}
-          onComplete={() => {
-            setShowFeedback(false);
+              // Ensure audio is completely stopped
+              if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+              }
 
-            // Ensure audio is completely stopped
-            if (audioRef.current) {
-              audioRef.current.pause();
-              audioRef.current.currentTime = 0;
-            }
-
-            setShowTransition(true);
-          }}
-        />
-      )}
-
-      {showTransition && <MindfulTransition onComplete={() => setLocation('/')} />}
+              // Wait for animation to complete before showing transition
+              setTimeout(() => {
+                setShowTransition(true);
+              }, 500);
+            }}
+          />
+        </div>
+      </AnimatedContent>
+      {/* Transition to welcome page after feedback */}
+      <AnimatedContent isVisible={showTransition} className="fixed inset-0 z-20 bg-white">
+        <MindfulTransition onComplete={() => setLocation('/')} />
+      </AnimatedContent>{' '}
     </div>
   );
 }
