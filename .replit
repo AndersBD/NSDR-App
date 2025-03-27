@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "bash", "web"]
+modules = ["nodejs-20", "bash", "web", "postgresql-16"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
@@ -13,7 +13,6 @@ build = ["npm", "run", "build"]
 [[ports]]
 localPort = 5173
 externalPort = 80
-exposeLocalhost = true
 
 [env]
 VITE_SUPABASE_URL = "$VITE_SUPABASE_URL"
