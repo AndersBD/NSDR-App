@@ -1,3 +1,4 @@
+
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import themePlugin from "@replit/vite-plugin-shadcn-theme-json";
@@ -22,6 +23,13 @@ export default defineConfig({
         ]
       : []),
   ],
+  server: {
+    host: true,
+    hmr: {
+      clientPort: 443,
+      protocol: 'wss'
+    }
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client", "src"),
