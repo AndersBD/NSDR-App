@@ -29,7 +29,11 @@ export default defineConfig({
   },
   preview: {
     host: "0.0.0.0",
-    port: 5173
+    port: 5173,
+    allowedHosts: [
+      "meditation-app-for-tablets-anders42.replit.app",
+      "c94671dd-9ade-47de-b31e-4a8e2e6b6326-00-3vyqeii2kljrx.picard.replit.dev"
+    ]
   },
   resolve: {
     alias: {
