@@ -35,7 +35,7 @@ export default function DurationPage() {
   return (
     <>
       <div className="flex items-center mb-6">
-        <Button variant="ghost" className="text-meditation-primary hover:bg-meditation-primary" onClick={() => setLocation('/')}>
+        <Button variant="ghost" className="text-meditation-primary hover:bg-meditation-primary/20" onClick={() => setLocation('/')}>
           <ChevronLeft className="w-5 h-5 mr-2" />
           Tilbage
         </Button>

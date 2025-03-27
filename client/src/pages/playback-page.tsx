@@ -36,21 +36,22 @@ export default function PlaybackPage() {
 
   // Handle ending of audio playback
   const handleEnded = () => {
-    console.log('handleEnded called, hasEndedRef:', hasEndedRef.current);
-
     // Only run this once
     if (!hasEndedRef.current) {
       hasEndedRef.current = true;
-      console.log('Setting showFeedback to true');
 
-      // Stop the audio completely
+      // Stop the audio
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.currentTime = 0;
       }
 
-      // Show feedback form
-      setShowFeedback(true);
+      // Show feedback form after a delay
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = 0;
+        }
+        setShowFeedback(true);
+      }, 2000);
     }
   };
 
@@ -99,7 +100,7 @@ export default function PlaybackPage() {
   return (
     <div className="h-full">
       <div className="flex items-center justify-between w-full">
-        <Button variant="ghost" className="text-meditation-primary hover:bg-meditation-primary" onClick={() => setLocation('/')}>
+        <Button variant="ghost" className="text-meditation-primary hover:bg-meditation-primary/20" onClick={() => setLocation('/')}>
           <ChevronLeft className="w-5 h-5 mr-2" />
           Afbryd session
         </Button>

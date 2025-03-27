@@ -52,25 +52,56 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
     const audio = audioRef.current;
     if (!audio) return;
 
-    // 1. Setup timeupdate listener
+    // 1. Setup time update handler
+    // This will check if the current time has reached the duration
     const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
 
-      // Near-end detection
-      if (!endTriggeredRef.current && audio.duration > 0 && audio.currentTime > 0 && audio.duration - audio.currentTime < 0.5) {
-        handleAudioEnd();
+      // Only check if we have valid duration and we're playing
+      if (!audio.paused && audio.duration > 0 && audio.currentTime > 0) {
+        // Simple check: has current time reached or exceeded duration?
+        if (audio.currentTime >= audio.duration && !endTriggeredRef.current) {
+          console.log('End detected - current time reached duration');
+          console.log(`Time: ${audio.currentTime}, Duration: ${audio.duration}`);
+
+          endTriggeredRef.current = true;
+
+          // Force display to show full duration for visual consistency
+          setCurrentTime(audio.duration);
+
+          // Pause playback
+          audio.pause();
+          setIsPlaying(false);
+
+          // Call onEnded callback
+          if (onEnded) {
+            console.log('Calling onEnded callback');
+            onEnded();
+          }
+        }
       }
     };
 
     // 2. Setup play/pause state syncing
     const syncPlayState = () => setIsPlaying(!audio.paused);
 
-    // 3. Setup ended handler
+    // 3. Setup ended handler with improved behavior
     const handleEnded = () => {
       console.log('Audio ended event fired');
-      setIsPlaying(false);
-      setCurrentTime(0);
-      handleAudioEnd();
+      if (!endTriggeredRef.current) {
+        endTriggeredRef.current = true;
+        setIsPlaying(false);
+
+        // Set current time to full duration instead of 0
+        if (audio.duration) {
+          setCurrentTime(audio.duration);
+        }
+
+        if (onEnded) {
+          console.log('Calling onEnded callback from ended event');
+          onEnded();
+        }
+      }
     };
 
     // Add event listeners
@@ -97,7 +128,7 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
       audio.removeEventListener('pause', syncPlayState);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [autoPlay, handleAudioEnd, volume, isMuted]);
+  }, [autoPlay, handleAudioEnd, volume, isMuted, onEnded]);
 
   // Update volume when volume or mute state changes
   useEffect(() => {
@@ -183,7 +214,13 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
         </span>
       </div>
 
-      <Slider value={[currentTime]} max={meditation.duration || 100} step={1} onValueChange={handleSeek} className="my-4" />
+      <Slider
+        value={[currentTime]}
+        max={meditation.duration || 100}
+        step={1}
+        onValueChange={handleSeek}
+        className="my-4 [&_.bg-secondary]:bg-meditation-primary/20 [&_.bg-primary]:bg-meditation-primary cursor-pointer"
+      />
 
       <div className="flex items-center justify-between">
         <div className="flex items-center">
@@ -194,7 +231,13 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
 
           {/* Always visible volume slider */}
           <div className="w-24 ml-2">
-            <Slider value={[isMuted ? 0 : volume]} max={1} step={0.01} onValueChange={handleVolumeChange} className="cursor-pointer" />
+            <Slider
+              value={[isMuted ? 0 : volume]}
+              max={1}
+              step={0.01}
+              onValueChange={handleVolumeChange}
+              className="cursor-pointer [&_.bg-secondary]:bg-meditation-primary/20 [&_.bg-primary]:bg-meditation-primary"
+            />
           </div>
         </div>
 

@@ -30,10 +30,10 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
       });
     },
     onSuccess: () => {
-      toast({
-        title: 'Tak for din feedback',
-        description: 'Din feedback er blevet registreret.',
-      });
+      // toast({
+      //   title: 'Tak for din feedback',
+      //   description: 'Din feedback er blevet registreret.',
+      // });
       onComplete();
     },
     onError: (error: Error) => {
