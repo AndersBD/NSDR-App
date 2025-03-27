@@ -1,3 +1,5 @@
+import { AppLayout } from '@/components/layout/app-layout';
+import { LayoutRoute } from '@/components/layout/layout-route';
 import { Toaster } from '@/components/ui/toaster';
 import DurationPage from '@/pages/duration-page';
 import NotFound from '@/pages/not-found';
@@ -16,11 +18,14 @@ const supabaseClient = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
 function Router() {
   return (
     <Switch>
+      {/* Welcome page doesn't need the standard layout */}
       <Route path="/" component={WelcomePage} />
-      <Route path="/duration/:type" component={DurationPage} />
-      <Route path="/sessions/:type/:duration" component={SessionListPage} />
-      <Route path="/play/:id" component={PlaybackPage} />
-      <Route component={NotFound} />
+
+      {/* All other pages use the AppLayout */}
+      <LayoutRoute layout={AppLayout} path="/duration/:type" component={DurationPage} />
+      <LayoutRoute layout={AppLayout} path="/sessions/:type/:duration" component={SessionListPage} />
+      <LayoutRoute layout={AppLayout} path="/play/:id" component={PlaybackPage} />
+      <LayoutRoute layout={AppLayout} component={NotFound} />
     </Switch>
   );
 }

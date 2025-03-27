@@ -9,6 +9,8 @@
     "background": "#ffffff",
     "foreground": "#384c44",
     "muted": "#86b5a2",
-    "accent": "#354a5b"
+    "accent": "#354a5b",
+    "primary-light": "#e8f0eb",
+    "primary-dark": "#2F4A3E"
   }
 }

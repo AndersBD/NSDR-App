@@ -1,3 +1,5 @@
+'use client';
+
 import { AudioPlayer } from '@/components/audio-player';
 import { FeedbackForm } from '@/components/feedback-form';
 import { MindfulTransition } from '@/components/mindful-transition';
@@ -6,17 +8,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { getMeditationByStorageId } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Loader2 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { ChevronLeft, Volume2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'wouter';
 
 export default function PlaybackPage() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
+
   const [showFeedback, setShowFeedback] = useState(false);
   const [showTransition, setShowTransition] = useState(false);
-  const { toast } = useToast();
+
+  // Flag to prevent multiple triggers
+  const hasEndedRef = useRef(false);
 
   const {
     data: meditation,
@@ -28,23 +34,41 @@ export default function PlaybackPage() {
     retry: 1,
   });
 
-  // useEffect(() => {
-  //   const audio = audioRef.current;
-  //   if (!audio) return;
-
-  //   const handleEnded = () => {
-  //     console.log('Audio playback ended, showing feedback form');
-  //     setShowFeedback(true);
-  //   };
-
-  //   audio.addEventListener('ended', handleEnded);
-  //   return () => audio.removeEventListener('ended', handleEnded);
-  // }, []);
-
+  // Handle ending of audio playback
   const handleEnded = () => {
-    console.log('Audio playback ended, showing feedback form');
-    setShowFeedback(true);
+    console.log('handleEnded called, hasEndedRef:', hasEndedRef.current);
+
+    // Only run this once
+    if (!hasEndedRef.current) {
+      hasEndedRef.current = true;
+      console.log('Setting showFeedback to true');
+
+      // Stop the audio completely
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+
+      // Show feedback form
+      setShowFeedback(true);
+    }
   };
+
+  // Check to ensure audio doesn't play when feedback is showing
+  useEffect(() => {
+    if (showFeedback && audioRef.current) {
+      const stopAudio = () => {
+        audioRef.current?.pause();
+        if (audioRef.current) audioRef.current.currentTime = 0;
+      };
+
+      stopAudio();
+
+      // Extra safety - check again after a short delay
+      const safetyCheck = setTimeout(stopAudio, 100);
+      return () => clearTimeout(safetyCheck);
+    }
+  }, [showFeedback]);
 
   if (error) {
     toast({
@@ -57,47 +81,73 @@ export default function PlaybackPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="h-full flex justify-center items-center">
+        <div className="w-16 h-16 border-4 border-meditation-primary/20 border-t-meditation-primary rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (!meditation) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
-        <h2 className="text-xl text-[#384c44] mb-4">Meditation not found</h2>
-        <Button variant="ghost" onClick={() => setLocation('/')} className="text-[#384c44] hover:text-[#667c73]">
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Go back home
-        </Button>
+      <div className="text-center p-8">
+        <h2 className="text-xl text-meditation-primary mb-4">Meditation not found</h2>
+        <Button onClick={() => setLocation('/')}>Return to Home</Button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-lg space-y-6">
-        <Button variant="ghost" className="mb-4 text-[#384c44] hover:text-[#667c73]" onClick={() => setLocation('/')}>
-          <ChevronLeft className="w-4 h-4 mr-2" />
+    <div className="h-full">
+      <div className="flex items-center justify-between w-full">
+        <Button variant="ghost" className="text-meditation-primary hover:bg-meditation-primary" onClick={() => setLocation('/')}>
+          <ChevronLeft className="w-5 h-5 mr-2" />
           Afbryd session
         </Button>
 
-        <Card className="border-2 border-[#384c44]">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center text-[#384c44]">Afspiller - {meditation.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AudioPlayer meditation={meditation} ref={audioRef} onEnded={handleEnded} autoPlay={true} />
-          </CardContent>
-        </Card>
+        <div className="flex items-center mr-2">
+          <Volume2 className="w-4 h-4 text-meditation-secondary mr-2" />
+          <span className="text-sm text-meditation-secondary">Brug gerne høretelefoner</span>
+        </div>
       </div>
+
+      <Card className="meditation-card overflow-hidden mt-4">
+        <CardHeader className="meditation-header pb-4 rounded-t-md">
+          <CardTitle className="text-2xl text-center">Afspiller - {meditation.name}</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <AudioPlayer ref={audioRef} meditation={meditation!} onEnded={handleEnded} autoPlay={!hasEndedRef.current} />
+          <div className="mt-6 p-4 bg-meditation-primary/5 rounded-lg">
+            <h3 className="text-meditation-primary font-medium mb-2">Meditation Tips</h3>
+            <ul className="text-meditation-secondary space-y-2">
+              <li className="flex items-start">
+                <span className="inline-block h-2 w-2 rounded-full bg-meditation-primary mt-2 mr-2"></span>
+                Find en behagelig position og luk øjnene
+              </li>
+              <li className="flex items-start">
+                <span className="inline-block h-2 w-2 rounded-full bg-meditation-primary mt-2 mr-2"></span>
+                Tag nogle dybe vejrtrækninger før du begynder
+              </li>
+              <li className="flex items-start">
+                <span className="inline-block h-2 w-2 rounded-full bg-meditation-primary mt-2 mr-2"></span>
+                Lad tankerne komme og gå uden at dømme dem
+              </li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
 
       {showFeedback && (
         <FeedbackForm
-          storageObjectId={meditation.id}
+          storageObjectId={meditation!.id}
           onComplete={() => {
             setShowFeedback(false);
+
+            // Ensure audio is completely stopped
+            if (audioRef.current) {
+              audioRef.current.pause();
+              audioRef.current.currentTime = 0;
+            }
+
             setShowTransition(true);
           }}
         />
