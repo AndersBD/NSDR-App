@@ -128,7 +128,7 @@ export default function StatsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            Din Mindfulness Rejse
+            Mindfulness Statistikker
           </motion.h1>
           <div className="w-[88px]"></div> {/* Spacer for balance */}
         </div>
