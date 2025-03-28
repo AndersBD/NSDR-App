@@ -25,7 +25,7 @@ export default function WelcomePage() {
           <motion.div className="text-center relative p-8" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <div className="absolute inset-0 bg-meditation-primary rounded-lg shadow-lg" />
             <div className="relative z-10 flex flex-col items-center">
-              <img src="/trustculture-logo.png" alt="MindSpace Logo" className="h-32 mx-auto mb-3" />
+              <img src={`${import.meta.env.BASE_URL}/trustculture-logo.png`} alt="MindSpace Logo" className="h-32 mx-auto mb-3" />
             </div>
           </motion.div>
 
