@@ -25,7 +25,7 @@ export default defineConfig({
   preview: {
     host: '0.0.0.0',
     port: 5173,
-    allowedHosts: ['meditation-app-for-tablets-anders42.replit.app'],
+    allowedHosts: ['meditation-app-for-tablets-anders42.replit.app', 'www.trust-culture.dk'],
   },
   resolve: {
     alias: {
