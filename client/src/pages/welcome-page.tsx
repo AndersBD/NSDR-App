@@ -4,7 +4,7 @@ import { PageTransition } from '@/components/animation/page-transition';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { BarChart3, Moon, Sparkles, Sun } from 'lucide-react';
+import { Moon, Shield, Sparkles, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 
@@ -19,7 +19,7 @@ export default function WelcomePage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-subtle flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-3xl space-y-8">
           {/* App Logo */}
           <motion.div className="text-center relative p-8" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
@@ -105,6 +105,13 @@ export default function WelcomePage() {
                 <Moon className="w-6 h-6 mr-3 transition-transform duration-300 group-hover:rotate-12" />
                 <span>Afslapning</span>
               </div>
+            </Button>
+          </motion.div>
+
+          <motion.div className="mt-6 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.6 }}>
+            <Button variant="link" className="text-meditation-secondary hover:text-meditation-primary" onClick={() => setLocation('/mindspace/admin')}>
+              <Shield className="w-4 h-4 mr-2" />
+              Admin område
             </Button>
           </motion.div>
         </div>

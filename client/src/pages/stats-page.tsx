@@ -112,12 +112,12 @@ export default function StatsPage() {
 
   return (
     <PageTransition>
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="container mx-auto px-4 py-6 ">
         <div className="flex items-center justify-between mb-8">
           <Button
             variant="ghost"
             className="text-meditation-primary hover:bg-meditation-primary/10 flex items-center gap-2 pl-2"
-            onClick={() => setLocation('/mindspace')}
+            onClick={() => setLocation('/mindspace/admin')}
           >
             <ChevronLeft className="w-5 h-5" />
             <span>Tilbage</span>

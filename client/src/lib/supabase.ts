@@ -4,7 +4,10 @@ import env from './env-config';
 
 export const supabase = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_KEY, {
   auth: {
-    persistSession: false,
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false,
+    storageKey: 'mindspace-auth-token',
   },
 });
 

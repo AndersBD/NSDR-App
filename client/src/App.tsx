@@ -11,8 +11,12 @@ import { createClient } from '@supabase/supabase-js';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AnimatePresence } from 'framer-motion';
 import { Route, Switch } from 'wouter';
+import { ProtectedRoute } from './components/auth/protected-route';
+import { AuthProvider } from './lib/auth-context';
 import env from './lib/env-config';
 import { queryClient } from './lib/queryClient';
+import AdminPage from './pages/admin-page';
+import LoginPage from './pages/login-page';
 import StatsPage from './pages/stats-page';
 
 const supabaseClient = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
@@ -21,11 +25,25 @@ function Router() {
   return (
     <AnimatePresence mode="wait">
       <Switch>
-        {/* Pages that doesn't need the standard layout */}
+        {/* Public routes */}
         <Route path="/mindspace" component={WelcomePage} />
-        <Route path="/mindspace/stats" component={StatsPage} />
+        {/* <Route path="/mindspace/login" component={LoginPage} /> */}
+        <LayoutRoute layout={AppLayout} path="/mindspace/login" component={LoginPage} />
 
-        {/* All other pages use the AppLayout */}
+        {/* Protected routes */}
+        <Route path="/mindspace/stats">
+          <ProtectedRoute>
+            <StatsPage />
+          </ProtectedRoute>
+        </Route>
+
+        <Route path="/mindspace/admin">
+          <ProtectedRoute>
+            <AdminPage />
+          </ProtectedRoute>
+        </Route>
+
+        {/* Regular routes that use the AppLayout */}
         <LayoutRoute layout={AppLayout} path="/mindspace/duration/:type" component={DurationPage} />
         <LayoutRoute layout={AppLayout} path="/mindspace/sessions/:type/:duration" component={SessionListPage} />
         <LayoutRoute layout={AppLayout} path="/mindspace/play/:id" component={PlaybackPage} />
@@ -38,10 +56,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionContextProvider supabaseClient={supabaseClient}>
-        <Router />
-        <Toaster />
-      </SessionContextProvider>
+      <AuthProvider>
+        <SessionContextProvider supabaseClient={supabaseClient}>
+          <Router />
+          <Toaster />
+        </SessionContextProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
