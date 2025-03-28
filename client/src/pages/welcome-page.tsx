@@ -86,7 +86,7 @@ export default function WelcomePage() {
             <Button
               size="lg"
               className="w-full h-16 text-lg bg-meditation-primary hover:bg-meditation-primary/80 border-2 border-meditation-primary group transition-all duration-300"
-              onClick={() => setLocation('/duration/energy')}
+              onClick={() => setLocation('/mindspace/duration/energy')}
             >
               <div className="relative flex items-center">
                 <Sun className="w-6 h-6 mr-3 transition-transform duration-300 group-hover:rotate-45" />
@@ -99,7 +99,7 @@ export default function WelcomePage() {
               size="lg"
               variant="outline"
               className="w-full h-16 text-lg border-2 border-meditation-primary text-meditation-primary hover:bg-meditation-primary hover:text-white group transition-all duration-300"
-              onClick={() => setLocation('/duration/relaxation')}
+              onClick={() => setLocation('/mindspace/duration/relaxation')}
             >
               <div className="relative flex items-center">
                 <Moon className="w-6 h-6 mr-3 transition-transform duration-300 group-hover:rotate-12" />
@@ -111,7 +111,7 @@ export default function WelcomePage() {
               size="lg"
               variant="ghost"
               className="w-full h-12 text-md text-meditation-primary hover:bg-meditation-primary/10 group transition-all duration-300 mt-4"
-              onClick={() => setLocation('/stats')}
+              onClick={() => setLocation('/mindspace/stats')}
             >
               <div className="relative flex items-center">
                 <BarChart3 className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:scale-110" />

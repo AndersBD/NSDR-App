@@ -59,7 +59,7 @@ export default function SessionListPage() {
           <Button
             variant="ghost"
             className="text-meditation-primary hover:bg-meditation-primary/10 flex items-center gap-2 pl-2"
-            onClick={() => setLocation(`/duration/${type}`)}
+            onClick={() => setLocation(`/mindspace/duration/${type}`)}
           >
             <ChevronLeft className="w-5 h-5" />
             <span>Tilbage</span>
@@ -95,7 +95,7 @@ export default function SessionListPage() {
                     transition={{ duration: 0.5 }}
                   >
                     <p className="text-meditation-secondary mb-4">Ingen sessioner fundet for den valgte varighed</p>
-                    <Button variant="outline" onClick={() => setLocation(`/duration/${type}`)} className="mt-2 meditation-button-outline">
+                    <Button variant="outline" onClick={() => setLocation(`/mindspace/duration/${type}`)} className="mt-2 meditation-button-outline">
                       Vælg en anden varighed
                     </Button>
                   </motion.div>
@@ -105,7 +105,7 @@ export default function SessionListPage() {
                       <motion.div key={meditation.id} variants={item} custom={index}>
                         <Card
                           className="overflow-hidden border border-meditation-primary/10 hover:border-meditation-primary/30 transition-all duration-300 cursor-pointer hover:shadow-md group"
-                          onClick={() => setLocation(`/play/${meditation.id}`)}
+                          onClick={() => setLocation(`/mindspace/play/${meditation.id}`)}
                         >
                           <div className="flex items-center">
                             <div className="w-64 h-36 flex-shrink-0 relative overflow-hidden">

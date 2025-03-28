@@ -22,13 +22,13 @@ function Router() {
     <AnimatePresence mode="wait">
       <Switch>
         {/* Pages that doesn't need the standard layout */}
-        <Route path="/" component={WelcomePage} />
-        <Route path="stats" component={StatsPage} />
+        <Route path="/mindspace" component={WelcomePage} />
+        <Route path="/mindspace/stats" component={StatsPage} />
 
         {/* All other pages use the AppLayout */}
-        <LayoutRoute layout={AppLayout} path="/duration/:type" component={DurationPage} />
-        <LayoutRoute layout={AppLayout} path="/sessions/:type/:duration" component={SessionListPage} />
-        <LayoutRoute layout={AppLayout} path="/play/:id" component={PlaybackPage} />
+        <LayoutRoute layout={AppLayout} path="/mindspace/duration/:type" component={DurationPage} />
+        <LayoutRoute layout={AppLayout} path="/mindspace/sessions/:type/:duration" component={SessionListPage} />
+        <LayoutRoute layout={AppLayout} path="/mindspace/play/:id" component={PlaybackPage} />
         <LayoutRoute layout={AppLayout} component={NotFound} />
       </Switch>
     </AnimatePresence>

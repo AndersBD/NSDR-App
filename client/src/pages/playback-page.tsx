@@ -123,7 +123,7 @@ export default function PlaybackPage() {
         <div className="text-center p-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <h2 className="text-xl text-meditation-primary mb-4">Meditation not found</h2>
-            <Button onClick={() => setLocation('/')}>Return to Home</Button>
+            <Button onClick={() => setLocation('/mindspace')}>Return to Home</Button>
           </motion.div>
         </div>
       </PageTransition>
@@ -142,7 +142,7 @@ export default function PlaybackPage() {
           <Button
             variant="ghost"
             className="text-meditation-primary hover:bg-meditation-primary/10 flex items-center gap-2 pl-2"
-            onClick={() => setLocation('/')}
+            onClick={() => setLocation('/mindspace')}
           >
             <ChevronLeft className="w-5 h-5" />
             <span>Afbryd session</span>
@@ -278,7 +278,7 @@ export default function PlaybackPage() {
         {/* Transition to welcome page after feedback */}
         {showTransition && (
           <div className="fixed inset-0 z-30 bg-white">
-            <MindfulTransition onComplete={() => setLocation('/')} />
+            <MindfulTransition onComplete={() => setLocation('/mindspace')} />
           </div>
         )}
       </div>
