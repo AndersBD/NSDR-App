@@ -54,7 +54,7 @@ export default function DurationPage() {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
+      <div className="space-y-6 ">
         <motion.div className="flex items-center mb-6" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <Button
             variant="ghost"
@@ -81,7 +81,7 @@ export default function DurationPage() {
                 Hvor lang tid har du til rådighed for din {type === 'energy' ? 'energi' : 'afslapnings'} session?
               </p>
             </CardHeader>
-            <CardContent className="grid gap-4 p-6">
+            <CardContent className="grid gap-4 p-6 max-h-[calc(100vh-300px)] min-h-[400px] overflow-auto">
               {isLoading ? (
                 <div className="flex justify-center p-8">
                   <Loader2 className="h-8 w-8 animate-spin text-meditation-primary" />

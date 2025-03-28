@@ -3,12 +3,11 @@
 import { PageTransition } from '@/components/animation/page-transition';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { getMeditationsByDuration } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Clock, Loader2, Music, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Loader2, Music } from 'lucide-react';
 import { useLocation, useParams } from 'wouter';
 
 export default function SessionListPage() {
@@ -81,16 +80,16 @@ export default function SessionListPage() {
               <p className="text-center text-white/80 mt-2">Vælg en meditation der passer til dit behov</p>
             </CardHeader>
             <CardContent className="p-6">
-              <ScrollArea className="h-[450px] pr-4">
+              <div className="max-h-[calc(100vh-300px)] min-h-[400px] overflow-auto pr-2">
                 {isLoading ? (
-                  <div className="col-span-2 flex justify-center p-8">
+                  <div className="flex justify-center p-8">
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
                       <Loader2 className="h-8 w-8 animate-spin text-meditation-primary" />
                     </motion.div>
                   </div>
                 ) : meditations?.length === 0 ? (
                   <motion.div
-                    className="col-span-2 text-center p-8"
+                    className="text-center p-8"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
@@ -101,63 +100,48 @@ export default function SessionListPage() {
                     </Button>
                   </motion.div>
                 ) : (
-                  <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-4" variants={container} initial="hidden" animate="show">
+                  <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
                     {meditations?.map((meditation, index) => (
                       <motion.div key={meditation.id} variants={item} custom={index}>
                         <Card
-                          className="overflow-hidden border-2 border-meditation-primary/10 hover:border-meditation-primary/40 transition-all duration-300 cursor-pointer hover:shadow-md group"
+                          className="overflow-hidden border border-meditation-primary/10 hover:border-meditation-primary/30 transition-all duration-300 cursor-pointer hover:shadow-md group"
                           onClick={() => setLocation(`/play/${meditation.id}`)}
                         >
-                          <div className="aspect-video bg-meditation-primary/5 relative overflow-hidden">
-                            {meditation.imageUrl ? (
-                              <img
-                                src={meditation.imageUrl || '/placeholder.svg'}
-                                alt={meditation.name}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gradient-subtle">
-                                <img
-                                  src={`https://api.dicebear.com/7.x/shapes/svg?seed=${meditation.name}`}
-                                  alt={meditation.name}
-                                  className="w-16 h-16 opacity-60 transition-transform duration-500 group-hover:scale-110"
-                                />
-                              </div>
-                            )}
-                            <motion.div
-                              className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 flex items-end justify-center p-4"
-                              initial={{ opacity: 0 }}
-                              whileHover={{ opacity: 1 }}
-                              transition={{ duration: 0.3 }}
-                            >
-                              <Button size="sm" className="bg-meditation-primary hover:bg-meditation-primary/90 text-white">
-                                <Play className="w-4 h-4 mr-1" />
-                                Afspil
-                              </Button>
-                            </motion.div>
-                          </div>
-                          <CardContent className="p-4 flex items-center justify-between">
-                            <div>
-                              <h3 className="font-medium text-meditation-primary truncate">{meditation.name}</h3>
-                              <div className="flex items-center text-meditation-secondary text-sm mt-1">
-                                <Clock className="w-3 h-3 mr-1" />
+                          <div className="flex items-center">
+                            <div className="w-64 h-36 flex-shrink-0 relative overflow-hidden">
+                              {meditation.imageUrl ? (
+                                <img src={meditation.imageUrl || '/placeholder.svg'} alt={meditation.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-subtle">
+                                  <img
+                                    src={`https://api.dicebear.com/7.x/shapes/svg?seed=${meditation.name}`}
+                                    alt={meditation.name}
+                                    className="w-20 h-20 opacity-60"
+                                  />
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex-1 p-4">
+                              <h3 className="font-medium text-meditation-primary break-words">{meditation.name}</h3>
+                              <div className="flex items-center text-meditation-secondary text-sm mt-2">
+                                <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
                                 <span>{Math.round(meditation.duration / 60)} min</span>
                               </div>
                             </div>
-                            <motion.div
-                              className="bg-meditation-primary/10 rounded-full p-2 group-hover:bg-meditation-primary transition-colors duration-300"
-                              whileHover={{ scale: 1.1 }}
-                              transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                            >
-                              <Play className="w-4 h-4 text-meditation-primary group-hover:text-white" />
-                            </motion.div>
-                          </CardContent>
+
+                            <div className="pr-4">
+                              <div className="w-8 h-8 rounded-full bg-meditation-primary/10 flex items-center justify-center group-hover:bg-meditation-primary transition-colors duration-300">
+                                <ChevronRight className="w-5 h-5 text-meditation-primary group-hover:text-white" />
+                              </div>
+                            </div>
+                          </div>
                         </Card>
                       </motion.div>
                     ))}
                   </motion.div>
                 )}
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
