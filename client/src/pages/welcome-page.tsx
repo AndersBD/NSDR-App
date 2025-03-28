@@ -106,18 +106,6 @@ export default function WelcomePage() {
                 <span>Afslapning</span>
               </div>
             </Button>
-
-            <Button
-              size="lg"
-              variant="ghost"
-              className="w-full h-12 text-md text-meditation-primary hover:bg-meditation-primary/10 group transition-all duration-300 mt-4"
-              onClick={() => setLocation('/mindspace/stats')}
-            >
-              <div className="relative flex items-center">
-                <BarChart3 className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:scale-110" />
-                <span>Se statistikker</span>
-              </div>
-            </Button>
           </motion.div>
         </div>
       </div>
