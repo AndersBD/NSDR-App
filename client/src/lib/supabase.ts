@@ -176,8 +176,6 @@ export async function signOut() {
 // Add new function to get meditation by storage ID
 export async function getMeditationByStorageId(id: string): Promise<StorageFile | null> {
   try {
-    console.log('Searching for meditation with ID:', id);
-
     // Helper function to search for file in a folder
     const searchInFolder = async (folderPath: string): Promise<StorageFile | null> => {
       const { data: files, error } = await supabase.storage.from('lydfiler-til-nsdr').list(folderPath);
@@ -187,13 +185,9 @@ export async function getMeditationByStorageId(id: string): Promise<StorageFile 
         return null;
       }
 
-      console.log(`Files in ${folderPath}:`, files);
-
       // Find audio file with matching ID
       const audioFile = files.find((f) => f.id === id);
       if (!audioFile) return null;
-
-      console.log('Found matching file:', audioFile);
 
       const basename = audioFile.name.replace(/\.\w+$/, '');
 
@@ -231,7 +225,6 @@ export async function getMeditationByStorageId(id: string): Promise<StorageFile 
     for (const folder of folders) {
       if (!folder.name.match(/^\d+\s*minutter$/)) continue;
 
-      console.log('Searching in folder:', folder.name);
       const result = await searchInFolder(folder.name);
       if (result) return result;
     }
