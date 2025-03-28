@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 
 interface AnimatedContentProps {
   isVisible: boolean;
@@ -9,18 +10,22 @@ interface AnimatedContentProps {
 }
 
 export function AnimatedContent({ isVisible, children, className = '' }: AnimatedContentProps) {
-  const [shouldRender, setShouldRender] = useState(isVisible);
-
-  useEffect(() => {
-    if (isVisible) {
-      setShouldRender(true);
-    } else {
-      const timer = setTimeout(() => setShouldRender(false), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isVisible]);
-
-  if (!shouldRender) return null;
-
-  return <div className={`transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${className}`}>{children}</div>;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{
+        opacity: isVisible ? 1 : 0,
+        y: isVisible ? 0 : 20,
+        scale: isVisible ? 1 : 0.98,
+      }}
+      exit={{ opacity: 0, y: 20, scale: 0.98 }}
+      transition={{
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
 }

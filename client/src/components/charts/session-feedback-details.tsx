@@ -1,7 +1,10 @@
+'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { StorageFile } from '@/lib/supabase';
+import type { StorageFile } from '@/lib/supabase';
+import { motion } from 'framer-motion';
 import { BarChart, Calendar, Clock, Star } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -76,7 +79,7 @@ const calculateSessionStats = (
   if (!sessionFeedback.length) return null;
 
   const total = sessionFeedback.length;
-  const avgWellbeing = parseFloat((sessionFeedback.reduce((sum, item) => sum + item.wellbeing_change, 0) / total).toFixed(2));
+  const avgWellbeing = Number.parseFloat((sessionFeedback.reduce((sum, item) => sum + item.wellbeing_change, 0) / total).toFixed(2));
   const positiveCount = sessionFeedback.filter((item) => item.wellbeing_change > 0).length;
   const positivePercentage = Math.round((positiveCount / total) * 100);
   const lastUsed = new Date(sessionFeedback[sessionFeedback.length - 1].created_at);
@@ -108,9 +111,9 @@ const prepareDistributionData = (sessionStats: SessionStats | null, wellbeingLab
   if (!sessionStats) return [];
 
   return Object.keys(wellbeingLabels)
-    .sort((a, b) => parseInt(a) - parseInt(b)) // Sort by numeric value
+    .sort((a, b) => Number.parseInt(a) - Number.parseInt(b)) // Sort by numeric value
     .map((value) => {
-      const numericValue = parseInt(value);
+      const numericValue = Number.parseInt(value);
       const count = sessionStats.distribution[value] || 0;
       const percent = Math.round((count / sessionStats.total) * 100);
 
@@ -132,8 +135,8 @@ const TimelineTooltip = ({ active, payload, label, wellbeingLabels }: any) => {
     const wellbeingLabel = wellbeingLabels[value] || `Value ${value}`;
 
     return (
-      <div className="bg-white p-3 border border-meditation-primary/20 rounded-md shadow">
-        <p className="font-medium text-sm">{formatDate(label)}</p>
+      <div className="bg-white p-3 border border-meditation-primary/20 rounded-md shadow-md">
+        <p className="font-medium text-sm text-meditation-primary">{formatDate(label)}</p>
         <p className="text-meditation-secondary text-sm">
           Score: <span className="font-medium">{value}</span>
         </p>
@@ -225,7 +228,7 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
 
   // Calculate Y-axis domain based on available wellbeing options
   const getYAxisDomain = useMemo(() => {
-    const values = Object.keys(wellbeingLabels).map((val) => parseInt(val));
+    const values = Object.keys(wellbeingLabels).map((val) => Number.parseInt(val));
     const min = Math.min(...values);
     const max = Math.max(...values);
     return [min, max];
@@ -238,7 +241,7 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
   // Empty state
   if (!isLoading && sessions.length === 0) {
     return (
-      <Card className="bg-meditation-primary/5">
+      <Card className="bg-meditation-primary/5 border-2 border-meditation-primary/10">
         <CardContent className="p-6 text-center">
           <p className="text-meditation-secondary">Ingen meditation feedback tilgængelig</p>
         </CardContent>
@@ -249,7 +252,7 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
   // Loading state
   if (isLoading) {
     return (
-      <Card>
+      <Card className="border-2 border-meditation-primary/10">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-meditation-primary">Session Specifik Feedback</CardTitle>
           <CardDescription>Indlæser data...</CardDescription>
@@ -273,29 +276,36 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
   }
 
   return (
-    <Card>
+    <Card className="border-2 border-meditation-primary/10">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg text-meditation-primary">Session Specifik Feedback</CardTitle>
         <CardDescription>Vælg en meditation for at se detaljeret feedback</CardDescription>
       </CardHeader>
       <CardContent>
-        <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
-          <SelectTrigger className="w-full mb-6 border-meditation-primary/30">
-            <SelectValue placeholder="Vælg en meditation" />
-          </SelectTrigger>
-          <SelectContent>
-            {sessions.map((session) => (
-              <SelectItem key={session.id} value={session.id}>
-                {session.name} ({session.count} feedbacks)
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <Select value={selectedSessionId} onValueChange={setSelectedSessionId}>
+            <SelectTrigger className="w-full mb-6 border-meditation-primary/30">
+              <SelectValue placeholder="Vælg en meditation" />
+            </SelectTrigger>
+            <SelectContent>
+              {sessions.map((session) => (
+                <SelectItem key={session.id} value={session.id}>
+                  {session.name} ({session.count} feedbacks)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </motion.div>
 
         {sessionStats ? (
-          <div className="space-y-6">
+          <motion.div className="space-y-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-meditation-primary/10 p-4 rounded-md">
+              <motion.div
+                className="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20 p-4 rounded-md shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-xs text-meditation-secondary">Antal Sessioner</p>
@@ -303,9 +313,14 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
                   </div>
                   <BarChart className="h-5 w-5 text-meditation-primary opacity-70" />
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-meditation-primary/10 p-4 rounded-md">
+              <motion.div
+                className="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20 p-4 rounded-md shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-xs text-meditation-secondary">Gennemsnit</p>
@@ -313,9 +328,14 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
                   </div>
                   <Star className="h-5 w-5 text-meditation-primary opacity-70" />
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-meditation-primary/10 p-4 rounded-md">
+              <motion.div
+                className="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20 p-4 rounded-md shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-xs text-meditation-secondary">Varighed</p>
@@ -325,9 +345,14 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
                   </div>
                   <Clock className="h-5 w-5 text-meditation-primary opacity-70" />
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-meditation-primary/10 p-4 rounded-md">
+              <motion.div
+                className="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20 p-4 rounded-md shadow-sm"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="text-xs text-meditation-secondary">Sidst Brugt</p>
@@ -337,18 +362,18 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
                   </div>
                   <Calendar className="h-5 w-5 text-meditation-primary opacity-70" />
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {timelineData.length > 0 && (
-              <div className="mt-6">
+              <motion.div className="mt-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }}>
                 <h3 className="text-sm font-medium text-meditation-primary mb-3">Feedback Historik</h3>
                 <div className="h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={timelineData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="colorHistory" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#86b5a2" stopOpacity={0.8} />
+                          <stop offset="5%" stopColor="#4a7c66" stopOpacity={0.8} />
                           <stop offset="95%" stopColor="#86b5a2" stopOpacity={0.1} />
                         </linearGradient>
                       </defs>
@@ -359,22 +384,30 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
                       <Area
                         type="monotone"
                         dataKey="wellbeing"
-                        stroke="#86b5a2"
+                        stroke="#4a7c66"
+                        strokeWidth={2}
                         fillOpacity={1}
                         fill="url(#colorHistory)"
-                        activeDot={{ r: 6, fill: '#4a7c66' }}
+                        activeDot={{ r: 6, fill: '#4a7c66', stroke: 'white', strokeWidth: 2 }}
+                        animationDuration={1000}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
+              </motion.div>
             )}
 
-            <div className={`grid gap-2 mt-4 grid-cols-${distributionData.length}`}>
-              {distributionData.map((item) => (
-                <div key={item.stringValue} className="text-center">
+            <motion.div className="grid gap-2 mt-4 grid-cols-5" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.6 }}>
+              {distributionData.map((item, index) => (
+                <motion.div
+                  key={item.stringValue}
+                  className="text-center"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.6 + index * 0.1 }}
+                >
                   <div
-                    className="mx-auto mb-1 rounded-full w-8 h-8 flex items-center justify-center text-white text-xs font-medium"
+                    className="mx-auto mb-1 rounded-full w-10 h-10 flex items-center justify-center text-white text-xs font-medium shadow-sm"
                     style={{ backgroundColor: item.color }}
                     title={`${item.label}: ${item.count} (${item.percent}%)`}
                     aria-label={`${item.label}: ${item.count} sessioner, ${item.percent}% af total`}
@@ -382,10 +415,10 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
                     {item.count}
                   </div>
                   <div className="text-xs text-meditation-secondary">{item.label}</div>
-                </div>
+                </motion.div>
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         ) : (
           <div className="p-6 text-center">
             <p className="text-meditation-secondary">Vælg en meditation for at se statistik</p>

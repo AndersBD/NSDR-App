@@ -1,5 +1,6 @@
 'use client';
 
+import { PageTransition } from '@/components/animation/page-transition';
 import { FeedbackDistributionChart } from '@/components/charts/feedback-distribution-chart';
 import { FeedbackTimelineChart } from '@/components/charts/feedback-timeline-chart';
 import { MeditationEffectivenessChart } from '@/components/charts/meditation-effectiveness-chart';
@@ -12,7 +13,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { getFeedbackStats, getMeditationsForFeedback, getWellbeingOptions } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
-import { CalendarClock, ChevronLeft, LineChart, TrendingUp, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { BarChart3, Brain, CalendarClock, ChevronLeft, Leaf, PieChart, TrendingUp, Users } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
 
@@ -22,6 +24,7 @@ export default function StatsPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
+  const [activeTab, setActiveTab] = useState<string>('overview');
 
   // Fetch feedback data
   const {
@@ -58,7 +61,7 @@ export default function StatsPage() {
 
     const totalSessions = feedbackData.length;
     const averageWellbeing =
-      totalSessions > 0 ? parseFloat((feedbackData.reduce((sum, item) => sum + item.wellbeing_change, 0) / totalSessions).toFixed(2)) : 0;
+      totalSessions > 0 ? Number.parseFloat((feedbackData.reduce((sum, item) => sum + item.wellbeing_change, 0) / totalSessions).toFixed(2)) : 0;
 
     const positiveChanges = feedbackData.filter((item) => item.wellbeing_change > 0).length;
     const positiveRate = totalSessions > 0 ? Math.round((positiveChanges / totalSessions) * 100) : 0;
@@ -94,119 +97,206 @@ export default function StatsPage() {
     }).format(date);
   };
 
+  const fadeInVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+        ease: 'easeOut',
+      },
+    }),
+  };
+
   return (
-    <div className="container mx-auto px-6 py-6 ">
-      <div className="flex items-center justify-between mb-6">
-        <Button variant="ghost" className="text-meditation-primary hover:bg-meditation-primary/20" onClick={() => setLocation('/')}>
-          <ChevronLeft className="w-5 h-5 mr-2" />
-          Tilbage
-        </Button>
-        <h1 className="text-2xl font-semibold text-meditation-primary">Wellness Statistik</h1>
-      </div>
+    <PageTransition>
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="flex items-center justify-between mb-8">
+          <Button
+            variant="ghost"
+            className="text-meditation-primary hover:bg-meditation-primary/10 flex items-center gap-2 pl-2"
+            onClick={() => setLocation('/')}
+          >
+            <ChevronLeft className="w-5 h-5" />
+            <span>Tilbage</span>
+          </Button>
+          <motion.h1
+            className="text-2xl font-semibold text-meditation-primary"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Din Mindfulness Rejse
+          </motion.h1>
+          <div className="w-[88px]"></div> {/* Spacer for balance */}
+        </div>
 
-      <Card className="mb-6">
-        <CardHeader className="meditation-header pb-4 rounded-t-md">
-          <CardTitle className="text-xl text-center">Vælg tidsperiode</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <Tabs defaultValue={timeRange} onValueChange={(value) => setTimeRange(value as TimeRange)} className="w-full">
-            <TabsList className="grid grid-cols-4 mb-0">
-              <TabsTrigger value="week">Uge</TabsTrigger>
-              <TabsTrigger value="month">Måned</TabsTrigger>
-              <TabsTrigger value="year">År</TabsTrigger>
-              <TabsTrigger value="all">Alle</TabsTrigger>
-            </TabsList>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8">
+          <Card className="border-2 border-meditation-primary/10 overflow-hidden">
+            <CardHeader className="meditation-header pb-4 rounded-t-md">
+              <CardTitle className="text-xl text-center">Vælg tidsperiode</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <Tabs defaultValue={timeRange} onValueChange={(value) => setTimeRange(value as TimeRange)} className="w-full">
+                <TabsList className="grid grid-cols-4 mb-0">
+                  <TabsTrigger value="week">Uge</TabsTrigger>
+                  <TabsTrigger value="month">Måned</TabsTrigger>
+                  <TabsTrigger value="year">År</TabsTrigger>
+                  <TabsTrigger value="all">Alle</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <motion.div custom={0} variants={fadeInVariants} initial="hidden" animate="visible">
+            <StatCard
+              title="Sessioner"
+              value={isLoading ? '...' : `${stats?.totalSessions || 0}`}
+              description="Total antal meditationer"
+              icon={<Users className="h-5 w-5 text-meditation-primary" />}
+              isLoading={isLoading}
+              color="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20"
+            />
+          </motion.div>
+
+          <motion.div custom={1} variants={fadeInVariants} initial="hidden" animate="visible">
+            <StatCard
+              title="Gennemsnitlig ændring"
+              value={isLoading ? '...' : `${stats?.averageWellbeing || 0}`}
+              description="Gennemsnitlig wellness-ændring"
+              icon={<TrendingUp className="h-5 w-5 text-meditation-primary" />}
+              isLoading={isLoading}
+              color="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20"
+            />
+          </motion.div>
+
+          <motion.div custom={2} variants={fadeInVariants} initial="hidden" animate="visible">
+            <StatCard
+              title="Positive resultater"
+              value={isLoading ? '...' : `${stats?.positiveRate || 0}%`}
+              description="Sessioner med positiv effekt"
+              icon={<Leaf className="h-5 w-5 text-meditation-primary" />}
+              isLoading={isLoading}
+              color="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20"
+            />
+          </motion.div>
+
+          <motion.div custom={3} variants={fadeInVariants} initial="hidden" animate="visible">
+            <StatCard
+              title="Seneste session"
+              value={isLoading ? '...' : formatDateForDisplay(stats?.lastSessionDate || null)}
+              description="Dato for seneste meditation"
+              icon={<CalendarClock className="h-5 w-5 text-meditation-primary" />}
+              isLoading={isLoading}
+              color="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20"
+            />
+          </motion.div>
+        </div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="mb-8">
+          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="flex justify-center mb-6">
+              <TabsList className="grid grid-cols-3 w-full max-w-md">
+                <TabsTrigger value="overview" className="flex items-center gap-2">
+                  <Brain className="h-4 w-4" />
+                  <span>Overblik</span>
+                </TabsTrigger>
+                <TabsTrigger value="trends" className="flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Trends</span>
+                </TabsTrigger>
+                <TabsTrigger value="sessions" className="flex items-center gap-2">
+                  <PieChart className="h-4 w-4" />
+                  <span>Sessioner</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            {activeTab === 'overview' && (
+              <div className="grid gap-6 lg:grid-cols-2">
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+                  <Card className="border-2 border-meditation-primary/10 h-full">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg text-meditation-primary flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5 text-meditation-primary/70" />
+                        Wellness Trend
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      {isLoading ? (
+                        <Skeleton className="w-full h-[300px] rounded-md" />
+                      ) : (
+                        <FeedbackTimelineChart feedbackData={feedbackData || []} wellbeingLabels={wellbeingLabels} />
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+                  <Card className="border-2 border-meditation-primary/10 h-full">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg text-meditation-primary flex items-center gap-2">
+                        <PieChart className="h-5 w-5 text-meditation-primary/70" />
+                        Fordeling af feedback
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      {isLoading ? (
+                        <Skeleton className="w-full h-[300px] rounded-md" />
+                      ) : (
+                        <FeedbackDistributionChart feedbackData={feedbackData || []} wellbeingLabels={wellbeingLabels} />
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
+            )}
+
+            {activeTab === 'trends' && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                <Card className="border-2 border-meditation-primary/10">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg text-meditation-primary flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-meditation-primary/70" />
+                      Effektivitet af meditationer
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    {isLoading ? (
+                      <Skeleton className="w-full h-[400px] rounded-md" />
+                    ) : (
+                      <MeditationEffectivenessChart feedbackData={feedbackData || []} meditationsMap={meditationsMap || {}} wellbeingLabels={wellbeingLabels} />
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeTab === 'sessions' && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                {isLoading ? (
+                  <Skeleton className="w-full h-[500px] rounded-md" />
+                ) : (
+                  <SessionFeedbackDetails feedbackData={feedbackData || []} meditationsMap={meditationsMap || {}} wellbeingLabels={wellbeingLabels} />
+                )}
+              </motion.div>
+            )}
           </Tabs>
-        </CardContent>
-      </Card>
+        </motion.div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard
-          title="Sessioner"
-          value={isLoading ? '...' : `${stats?.totalSessions || 0}`}
-          description="Total antal meditationer"
-          icon={<Users className="h-5 w-5 text-meditation-primary" />}
-          isLoading={isLoading}
-        />
-
-        <StatCard
-          title="Gennemsnitlig ændring"
-          value={isLoading ? '...' : `${stats?.averageWellbeing || 0}`}
-          description="Gennemsnitlig wellness-ændring"
-          icon={<TrendingUp className="h-5 w-5 text-meditation-primary" />}
-          isLoading={isLoading}
-        />
-
-        <StatCard
-          title="Positive resultater"
-          value={isLoading ? '...' : `${stats?.positiveRate || 0}%`}
-          description="Sessioner med positiv effekt"
-          icon={<LineChart className="h-5 w-5 text-meditation-primary" />}
-          isLoading={isLoading}
-        />
-
-        <StatCard
-          title="Seneste session"
-          value={isLoading ? '...' : formatDateForDisplay(stats?.lastSessionDate || null)}
-          description="Dato for seneste meditation"
-          icon={<CalendarClock className="h-5 w-5 text-meditation-primary" />}
-          isLoading={isLoading}
-        />
+        <motion.p
+          className="text-center text-meditation-secondary italic text-sm mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          "Meditation er ikke at flygte fra livet, men at forberede sig til at møde det fuldt ud"
+        </motion.p>
       </div>
-
-      <div className="grid gap-6 mb-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg text-meditation-primary">Wellness Trend</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            {isLoading ? (
-              <Skeleton className="w-full h-[300px] rounded-md" />
-            ) : (
-              <FeedbackTimelineChart feedbackData={feedbackData || []} wellbeingLabels={wellbeingLabels} />
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg text-meditation-primary">Fordeling af feedback</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            {isLoading ? (
-              <Skeleton className="w-full h-[300px] rounded-md" />
-            ) : (
-              <FeedbackDistributionChart feedbackData={feedbackData || []} wellbeingLabels={wellbeingLabels} />
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg text-meditation-primary">Effektivitet af meditationer</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          {isLoading ? (
-            <Skeleton className="w-full h-[400px] rounded-md" />
-          ) : (
-            <MeditationEffectivenessChart feedbackData={feedbackData || []} meditationsMap={meditationsMap || {}} wellbeingLabels={wellbeingLabels} />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Session feedback details component */}
-      <div className="my-6">
-        {isLoading ? (
-          <Skeleton className="w-full h-[500px] rounded-md" />
-        ) : (
-          <SessionFeedbackDetails feedbackData={feedbackData || []} meditationsMap={meditationsMap || {}} wellbeingLabels={wellbeingLabels} />
-        )}
-      </div>
-
-      <p className="text-center text-meditation-secondary italic text-sm mt-6">
-        Disse statistikker hjælper med at evaluere effektiviteten af dine meditationssessioner over tid
-      </p>
-    </div>
+    </PageTransition>
   );
 }

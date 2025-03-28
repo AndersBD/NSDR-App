@@ -1,3 +1,6 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -26,7 +29,7 @@ export function FeedbackTimelineChart({ feedbackData, wellbeingLabels }: Feedbac
     return Object.values(dateGroups)
       .map((group) => ({
         date: group.date,
-        average: group.count > 0 ? parseFloat((group.total / group.count).toFixed(2)) : 0,
+        average: group.count > 0 ? Number.parseFloat((group.total / group.count).toFixed(2)) : 0,
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
   }, [feedbackData]);
@@ -67,10 +70,10 @@ export function FeedbackTimelineChart({ feedbackData, wellbeingLabels }: Feedbac
       const wellbeingText = getWellbeingLabel(value);
 
       return (
-        <div className="bg-white p-3 border border-meditation-primary/20 rounded-md shadow">
+        <div className="bg-white p-3 border border-meditation-primary/20 rounded-md shadow-md">
           <p className="font-medium text-sm text-meditation-primary">{formatDate(label)}</p>
           <p className="text-meditation-secondary text-sm">
-            Gennemsnit: <span className="font-medium">{value}</span>
+            Score: <span className="font-medium">{value}</span>
           </p>
           <p className="text-meditation-secondary text-sm">
             Vurdering: <span className="font-medium">{wellbeingText}</span>
@@ -82,22 +85,31 @@ export function FeedbackTimelineChart({ feedbackData, wellbeingLabels }: Feedbac
   };
 
   return (
-    <div className="w-full h-[300px]">
+    <motion.div className="w-full h-[300px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorWellbeing" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#86b5a2" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#86b5a2" stopOpacity={0.1} />
+              <stop offset="5%" stopColor="#4a7c66" stopOpacity={0.8} />
+              <stop offset="95%" stopColor="#86b5a2" stopOpacity={0.2} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fill: '#667c73', fontSize: 12 }} />
-          <YAxis domain={getYDomain()} tick={{ fill: '#667c73', fontSize: 12 }} tickCount={5} tickFormatter={(value) => value.toString()} />
+          <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fill: '#667c73', fontSize: 12 }} tickMargin={10} />
+          <YAxis domain={getYDomain()} tick={{ fill: '#667c73', fontSize: 12 }} tickCount={5} tickFormatter={(value) => value.toString()} tickMargin={10} />
           <Tooltip content={<CustomTooltip />} />
-          <Area type="monotone" dataKey="average" stroke="#86b5a2" fillOpacity={1} fill="url(#colorWellbeing)" activeDot={{ r: 6, fill: '#4a7c66' }} />
+          <Area
+            type="monotone"
+            dataKey="average"
+            stroke="#4a7c66"
+            strokeWidth={2}
+            fillOpacity={1}
+            fill="url(#colorWellbeing)"
+            activeDot={{ r: 6, fill: '#4a7c66', stroke: 'white', strokeWidth: 2 }}
+            animationDuration={1500}
+          />
         </AreaChart>
       </ResponsiveContainer>
-    </div>
+    </motion.div>
   );
 }

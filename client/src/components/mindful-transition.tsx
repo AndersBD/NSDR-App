@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 interface MindfulTransitionProps {
@@ -29,78 +30,107 @@ export function MindfulTransition({ onComplete, className }: MindfulTransitionPr
   }, [onComplete]);
 
   return (
-    <div className={cn('fixed inset-0 flex flex-col items-center justify-center bg-white z-50 transition-all duration-1000', className)}>
+    <div className={cn('fixed inset-0 flex flex-col items-center justify-center bg-white z-50', className)}>
       <div className="relative flex flex-col items-center">
         {/* Breathing circle animation */}
         <div className="relative mb-8">
-          <div
-            className={cn(
-              'absolute rounded-full transition-all duration-[4s] ease-in-out',
-              step >= 1 ? 'opacity-10' : 'opacity-0',
-              'bg-meditation-primary w-64 h-64 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2',
-              step >= 1 && 'animate-breathe'
-            )}
+          <motion.div
+            className="absolute rounded-full bg-meditation-primary -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+              opacity: step >= 1 ? 0.1 : 0,
+              scale: step >= 1 ? [1, 1.05, 1] : 0,
+            }}
+            transition={{
+              duration: 4,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: 'reverse',
+              ease: 'easeInOut',
+            }}
+            style={{ width: '16rem', height: '16rem' }}
           />
-          <div
-            className={cn(
-              'absolute rounded-full transition-all duration-[3s] ease-in-out',
-              step >= 1 ? 'opacity-20' : 'opacity-0',
-              'bg-meditation-primary w-48 h-48 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2',
-              step >= 1 && 'animate-breathe delay-500'
-            )}
+
+          <motion.div
+            className="absolute rounded-full bg-meditation-primary -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+              opacity: step >= 1 ? 0.2 : 0,
+              scale: step >= 1 ? [1, 1.05, 1] : 0,
+            }}
+            transition={{
+              duration: 4,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: 'reverse',
+              ease: 'easeInOut',
+              delay: 0.5,
+            }}
+            style={{ width: '12rem', height: '12rem' }}
           />
-          <div
-            className={cn(
-              'absolute rounded-full transition-all duration-[2s] ease-in-out',
-              step >= 1 ? 'opacity-30' : 'opacity-0',
-              'bg-meditation-primary w-32 h-32 -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2',
-              step >= 1 && 'animate-breathe delay-1000'
-            )}
+
+          <motion.div
+            className="absolute rounded-full bg-meditation-primary -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{
+              opacity: step >= 1 ? 0.3 : 0,
+              scale: step >= 1 ? [1, 1.05, 1] : 0,
+            }}
+            transition={{
+              duration: 4,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatType: 'reverse',
+              ease: 'easeInOut',
+              delay: 1,
+            }}
+            style={{ width: '8rem', height: '8rem' }}
           />
 
           {/* Center dot */}
           <div className="relative w-16 h-16">
-            <div
-              className={cn(
-                'absolute rounded-full bg-meditation-primary w-4 h-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                'transition-all duration-1000',
-                step === 0 && 'scale-0',
-                step >= 1 && 'scale-100'
-              )}
+            <motion.div
+              className="absolute rounded-full bg-meditation-primary w-4 h-4 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+              initial={{ scale: 0 }}
+              animate={{ scale: step >= 1 ? 1 : 0 }}
+              transition={{ duration: 0.5 }}
             />
           </div>
         </div>
 
         {/* Text messages */}
-        <p
-          className={cn(
-            'text-meditation-primary text-xl font-medium transition-all duration-1000',
-            step < 1 && 'opacity-0 translate-y-4',
-            step >= 1 && 'opacity-100 translate-y-0'
-          )}
+        <motion.p
+          className="text-meditation-primary text-xl font-medium"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{
+            opacity: step >= 1 ? 1 : 0,
+            y: step >= 1 ? 0 : 10,
+          }}
+          transition={{ duration: 0.8 }}
         >
           Tak for din meditation
-        </p>
+        </motion.p>
 
-        <p
-          className={cn(
-            'text-meditation-secondary mt-2 transition-all duration-1000',
-            step < 2 && 'opacity-0 translate-y-4',
-            step >= 2 && 'opacity-100 translate-y-0'
-          )}
+        <motion.p
+          className="text-meditation-secondary mt-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{
+            opacity: step >= 2 ? 1 : 0,
+            y: step >= 2 ? 0 : 10,
+          }}
+          transition={{ duration: 0.8 }}
         >
           Tag den ro du har fundet med dig videre...
-        </p>
+        </motion.p>
 
-        <p
-          className={cn(
-            'text-meditation-secondary mt-2 transition-all duration-1000',
-            step < 3 && 'opacity-0 translate-y-4',
-            step >= 3 && 'opacity-100 translate-y-0'
-          )}
+        <motion.p
+          className="text-meditation-secondary mt-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{
+            opacity: step >= 3 ? 1 : 0,
+            y: step >= 3 ? 0 : 10,
+          }}
+          transition={{ duration: 0.8 }}
         >
           Vender tilbage til forsiden...
-        </p>
+        </motion.p>
       </div>
     </div>
   );

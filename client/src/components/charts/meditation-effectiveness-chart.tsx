@@ -1,4 +1,7 @@
-import { StorageFile } from '@/lib/supabase';
+'use client';
+
+import type { StorageFile } from '@/lib/supabase';
+import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
@@ -50,7 +53,7 @@ export function MeditationEffectivenessChart({ feedbackData, meditationsMap, wel
         id: stat.id,
         name: stat.name,
         count: stat.count,
-        average: parseFloat((stat.total / stat.count).toFixed(2)),
+        average: Number.parseFloat((stat.total / stat.count).toFixed(2)),
         duration: stat.duration,
       }))
       .sort((a, b) => b.average - a.average); // Sort by effectiveness
@@ -62,8 +65,8 @@ export function MeditationEffectivenessChart({ feedbackData, meditationsMap, wel
       const wellbeingLabel = getWellbeingLabel(data.average);
 
       return (
-        <div className="bg-white p-3 border border-meditation-primary/20 rounded-md shadow">
-          <p className="font-medium text-sm">"{data.name}"</p>
+        <div className="bg-white p-3 border border-meditation-primary/20 rounded-md shadow-md">
+          <p className="font-medium text-sm text-meditation-primary">"{data.name}"</p>
           <p className="text-meditation-secondary text-xs mt-1">
             Gennemsnit: <span className="font-medium">{data.average}</span> ({wellbeingLabel})
           </p>
@@ -97,20 +100,20 @@ export function MeditationEffectivenessChart({ feedbackData, meditationsMap, wel
   };
 
   return (
-    <div className="w-full h-[400px]">
+    <motion.div className="w-full h-[400px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 10, left: 120, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
           <XAxis type="number" domain={[-2, 2]} tickCount={5} tick={{ fill: '#667c73', fontSize: 12 }} />
           <YAxis dataKey="name" type="category" tick={{ fill: '#667c73', fontSize: 12 }} width={120} />
           <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="average" barSize={20}>
+          <Bar dataKey="average" barSize={20} animationDuration={1500} animationBegin={300}>
             {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getBarColor(entry.average)} />
+              <Cell key={`cell-${index}`} fill={getBarColor(entry.average)} radius={4} />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </motion.div>
   );
 }

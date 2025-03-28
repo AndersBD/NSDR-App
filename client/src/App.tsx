@@ -9,6 +9,7 @@ import WelcomePage from '@/pages/welcome-page';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { createClient } from '@supabase/supabase-js';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { AnimatePresence } from 'framer-motion';
 import { Route, Switch } from 'wouter';
 import env from './lib/env-config';
 import { queryClient } from './lib/queryClient';
@@ -18,17 +19,19 @@ const supabaseClient = createClient(env.SUPABASE_URL, env.SUPABASE_KEY);
 
 function Router() {
   return (
-    <Switch>
-      {/* Welcome page doesn't need the standard layout */}
-      <Route path="/" component={WelcomePage} />
-      <Route path="stats" component={StatsPage} />
+    <AnimatePresence mode="wait">
+      <Switch>
+        {/* Pages that doesn't need the standard layout */}
+        <Route path="/" component={WelcomePage} />
+        <Route path="stats" component={StatsPage} />
 
-      {/* All other pages use the AppLayout */}
-      <LayoutRoute layout={AppLayout} path="/duration/:type" component={DurationPage} />
-      <LayoutRoute layout={AppLayout} path="/sessions/:type/:duration" component={SessionListPage} />
-      <LayoutRoute layout={AppLayout} path="/play/:id" component={PlaybackPage} />
-      <LayoutRoute layout={AppLayout} component={NotFound} />
-    </Switch>
+        {/* All other pages use the AppLayout */}
+        <LayoutRoute layout={AppLayout} path="/duration/:type" component={DurationPage} />
+        <LayoutRoute layout={AppLayout} path="/sessions/:type/:duration" component={SessionListPage} />
+        <LayoutRoute layout={AppLayout} path="/play/:id" component={PlaybackPage} />
+        <LayoutRoute layout={AppLayout} component={NotFound} />
+      </Switch>
+    </AnimatePresence>
   );
 }
 
