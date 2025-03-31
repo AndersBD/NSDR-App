@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getMeditationByStorageId } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Headphones, Sparkles } from 'lucide-react';
+import { ChevronLeft, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'wouter';
 
@@ -147,11 +147,6 @@ export default function PlaybackPage() {
             <ChevronLeft className="w-5 h-5" />
             <span>Afbryd session</span>
           </Button>
-
-          <div className="flex items-center bg-meditation-primary/5 px-3 py-1.5 rounded-full">
-            <Headphones className="w-4 h-4 text-meditation-primary mr-2" />
-            <span className="text-sm text-meditation-secondary">Brug gerne høretelefoner</span>
-          </div>
         </motion.div>
 
         <motion.div
