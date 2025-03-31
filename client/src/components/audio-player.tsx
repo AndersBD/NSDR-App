@@ -37,7 +37,6 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
   const handleAudioEnd = useCallback(() => {
     // Prevent multiple triggers
     if (!endTriggeredRef.current && onEnded) {
-      console.log('Audio playback ended - triggering onEnded callback');
       endTriggeredRef.current = true;
 
       // Reset player state
@@ -61,9 +60,6 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
       if (!audio.paused && audio.duration > 0 && audio.currentTime > 0) {
         // Simple check: has current time reached or exceeded duration?
         if (audio.currentTime >= audio.duration && !endTriggeredRef.current) {
-          console.log('End detected - current time reached duration');
-          console.log(`Time: ${audio.currentTime}, Duration: ${audio.duration}`);
-
           endTriggeredRef.current = true;
 
           // Force display to show full duration for visual consistency
@@ -75,7 +71,6 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
 
           // Call onEnded callback
           if (onEnded) {
-            console.log('Calling onEnded callback');
             onEnded();
           }
         }
@@ -87,7 +82,6 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
 
     // 3. Setup ended handler with improved behavior
     const handleEnded = () => {
-      console.log('Audio ended event fired');
       if (!endTriggeredRef.current) {
         endTriggeredRef.current = true;
         setIsPlaying(false);
@@ -98,7 +92,6 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
         }
 
         if (onEnded) {
-          console.log('Calling onEnded callback from ended event');
           onEnded();
         }
       }
