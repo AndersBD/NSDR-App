@@ -24,6 +24,21 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
     queryFn: getWellbeingOptions,
   });
 
+  // Auto-timeout for the feedback form
+  useEffect(() => {
+    // Auto-timeout after 30 seconds of inactivity
+    const autoTimeoutDuration = 30000;
+    const autoTimeout = setTimeout(() => {
+      // Only auto-complete if user hasn't started submitting
+      if (!isSubmitting && !selectedOption) {
+        onComplete();
+      }
+    }, autoTimeoutDuration);
+
+    // Clean up timeout if component unmounts or user interacts
+    return () => clearTimeout(autoTimeout);
+  }, [onComplete, isSubmitting, selectedOption]);
+
   useEffect(() => {
     if (isSubmitting) {
       const safetyTimer = setTimeout(() => {
