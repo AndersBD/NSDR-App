@@ -19,29 +19,29 @@ export default function WelcomePage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-gradient-subtle flex flex-col items-center justify-center p-4">
-        <div className="w-full max-w-3xl space-y-8">
+      <div className="min-h-screen bg-gradient-subtle flex flex-col items-center py-8 ">
+        <div className="w-full max-w-6xl space-y-4">
           {/* App Logo */}
-          <motion.div className="text-center relative p-8" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+          <motion.div className="text-center relative p-6" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <div className="absolute inset-0 bg-meditation-primary rounded-lg shadow-lg" />
             <div className="relative z-10 flex flex-col items-center">
-              <img src={`${import.meta.env.BASE_URL}/trustculture-logo.png`} alt="MindSpace Logo" className="h-32 mx-auto mb-3" />
+              <img src={`${import.meta.env.BASE_URL}/trustculture-logo.png`} alt="MindSpace Logo" className="h-28 mx-auto mb-2" />
             </div>
           </motion.div>
 
           {/* Welcome Text */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}>
             <Card className="border-2 border-meditation-primary shadow-md">
-              <CardContent className="p-8">
-                <h2 className="text-2xl font-semibold text-meditation-primary mb-6 text-center">Velkommen til MindSpace</h2>
+              <CardContent className="p-6 py-5">
+                <h2 className="text-2xl font-semibold text-meditation-primary mb-4 text-center">Velkommen til MindSpace</h2>
 
-                <div className="space-y-5 text-meditation-secondary">
+                <div className="space-y-3 text-meditation-secondary">
                   <p className="leading-relaxed">
                     Trænger du til mere ro, bedre restitution og et større mentalt overskud? MindSpace tilbyder dig effektive og videnskabeligt dokumenterede
                     teknikker til afslapning, stresshåndtering og øget mental robusthed.
                   </p>
 
-                  <div className="bg-meditation-primary-light/30 p-5 rounded-lg border border-meditation-primary/20">
+                  <div className="bg-meditation-primary-light/30 p-4 rounded-lg border border-meditation-primary/20">
                     <h3 className="text-lg font-semibold text-meditation-primary mb-3">Sådan bruger du appen:</h3>
                     <ul className="space-y-3">
                       <li className="flex gap-3">
@@ -81,8 +81,13 @@ export default function WelcomePage() {
             </Card>
           </motion.div>
 
-          {/* Buttons */}
-          <motion.div className="grid gap-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.4 }}>
+          {/* Buttons - now in a row with grid-cols-2 */}
+          <motion.div
+            className="grid grid-cols-2 gap-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+          >
             <Button
               size="lg"
               className="w-full h-16 text-lg bg-meditation-primary hover:bg-meditation-primary/80 border-2 border-meditation-primary group transition-all duration-300"
@@ -108,7 +113,7 @@ export default function WelcomePage() {
             </Button>
           </motion.div>
 
-          <motion.div className="mt-6 text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.6 }}>
+          <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.6 }}>
             <Button variant="link" className="text-meditation-secondary hover:text-meditation-primary" onClick={() => setLocation('/mindspace/admin')}>
               <Shield className="w-4 h-4 mr-2" />
               Admin område

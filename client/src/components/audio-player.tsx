@@ -186,9 +186,11 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
     <div className="">
       <audio ref={audioRef} src={meditation.audioUrl} preload="metadata" autoPlay={autoPlay} />
 
-      <div className="aspect-video bg-meditation-primary/5 rounded-xl overflow-hidden mb-4 shadow-md h-64 w-full">
+      <div className="aspect-video bg-meditation-primary/5 rounded-xl overflow-hidden mb-4 shadow-md h-auto w-full">
         {meditation.imageUrl ? (
-          <img src={meditation.imageUrl || '/placeholder.svg'} alt={meditation.name} className="w-full h-full object-cover" />
+          <div className="w-full h-full">
+            <img src={meditation.imageUrl || '/placeholder.svg'} alt={meditation.name} className="w-full h-full object-cover" />
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-subtle">
             <img
@@ -223,7 +225,7 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
           </Button>
 
           {/* Always visible volume slider */}
-          <div className="w-24 ml-2">
+          <div className="w-28 ml-2">
             <Slider
               value={[isMuted ? 0 : volume]}
               max={1}
@@ -239,14 +241,14 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
             size="lg"
             variant="outline"
             onClick={stopPlayback}
-            className=" border-2 border-meditation-primary text-meditation-primary hover:bg-meditation-accent hover:text-white"
+            className="border-2 border-meditation-primary text-meditation-primary hover:bg-meditation-accent hover:text-white"
           >
             <StopCircle className="h-6 w-6" />
             <span className="sr-only">Stop</span>
           </Button>
 
-          <Button size="lg" onClick={togglePlay} className=" bg-meditation-primary hover:bg-meditation-secondary text-white flex items-center justify-center">
-            {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+          <Button size="lg" onClick={togglePlay} className="bg-meditation-primary hover:bg-meditation-secondary text-white flex items-center justify-center ">
+            {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 ml-1" />}
             <span className="sr-only">{isPlaying ? 'Pause' : 'Play'}</span>
           </Button>
         </div>

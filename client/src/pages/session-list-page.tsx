@@ -80,7 +80,7 @@ export default function SessionListPage() {
               <p className="text-center text-white/80 mt-2">Vælg en meditation der passer til dit behov</p>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="max-h-[calc(100vh-300px)] min-h-[400px] overflow-auto pr-2">
+              <div className="min-h-[450px]">
                 {isLoading ? (
                   <div className="flex justify-center p-8">
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
@@ -100,7 +100,7 @@ export default function SessionListPage() {
                     </Button>
                   </motion.div>
                 ) : (
-                  <motion.div className="space-y-4" variants={container} initial="hidden" animate="show">
+                  <motion.div className="space-y-4 md:grid md:grid-cols-2 md:gap-4 md:space-y-0" variants={container} initial="hidden" animate="show">
                     {meditations?.map((meditation, index) => (
                       <motion.div key={meditation.id} variants={item} custom={index}>
                         <Card
@@ -108,7 +108,7 @@ export default function SessionListPage() {
                           onClick={() => setLocation(`/mindspace/play/${meditation.id}`)}
                         >
                           <div className="flex items-center">
-                            <div className="w-64 h-36 flex-shrink-0 relative overflow-hidden">
+                            <div className="w-56 h-32 flex-shrink-0 relative overflow-hidden">
                               {meditation.imageUrl ? (
                                 <img src={meditation.imageUrl || '/placeholder.svg'} alt={meditation.name} className="w-full h-full object-cover" />
                               ) : (

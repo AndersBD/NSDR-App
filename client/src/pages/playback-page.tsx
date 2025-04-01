@@ -132,7 +132,7 @@ export default function PlaybackPage() {
 
   return (
     <PageTransition>
-      <div className="h-full space-y-4 main-content-container">
+      <div className="h-full space-y-4">
         <motion.div
           className="flex items-center justify-between w-full"
           initial={{ opacity: 0, y: -10 }}
@@ -149,12 +149,7 @@ export default function PlaybackPage() {
           </Button>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="main-content-container"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
           <Card className="border-2 border-meditation-primary/10 shadow-sm overflow-hidden">
             <CardHeader className="pb-4 rounded-t-md bg-meditation-primary text-white">
               <CardTitle className="text-2xl text-center flex justify-center items-center gap-2">
@@ -175,50 +170,52 @@ export default function PlaybackPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
-                <AudioPlayer ref={audioRef} meditation={meditation} onEnded={handleEnded} autoPlay={!hasEndedRef.current} />
-              </motion.div>
+              <div className="flex flex-col md:flex-row gap-6">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="flex-1">
+                  <AudioPlayer ref={audioRef} meditation={meditation} onEnded={handleEnded} autoPlay={!hasEndedRef.current} />
+                </motion.div>
 
-              <motion.div
-                className="mt-6 p-5 bg-meditation-primary/5 rounded-lg border border-meditation-primary/10"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                <h3 className="text-meditation-primary font-medium mb-3 flex items-center">
-                  <Sparkles className="w-4 h-4 mr-2 text-meditation-primary/70" />
-                  Meditation Tips
-                </h3>
-                <ul className="text-meditation-secondary space-y-3">
-                  <motion.li
-                    className="flex items-start"
-                    initial={{ opacity: 0, x: -5 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.5 }}
-                  >
-                    <span className="inline-block h-2 w-2 rounded-full bg-meditation-primary mt-2 mr-2"></span>
-                    Find en behagelig position og luk øjnene
-                  </motion.li>
-                  <motion.li
-                    className="flex items-start"
-                    initial={{ opacity: 0, x: -5 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.6 }}
-                  >
-                    <span className="inline-block h-2 w-2 rounded-full bg-meditation-primary mt-2 mr-2"></span>
-                    Tag nogle dybe vejrtrækninger før du begynder
-                  </motion.li>
-                  <motion.li
-                    className="flex items-start"
-                    initial={{ opacity: 0, x: -5 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.7 }}
-                  >
-                    <span className="inline-block h-2 w-2 rounded-full bg-meditation-primary mt-2 mr-2"></span>
-                    Lad tankerne komme og gå uden at dømme dem
-                  </motion.li>
-                </ul>
-              </motion.div>
+                <motion.div
+                  className="p-5 bg-meditation-primary/5 rounded-lg border border-meditation-primary/10 md:w-1/3"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                  <h3 className="text-meditation-primary font-medium mb-3 flex items-center">
+                    <Sparkles className="w-4 h-4 mr-2 text-meditation-primary/70" />
+                    Meditation Tips
+                  </h3>
+                  <ul className="text-meditation-secondary space-y-3">
+                    <motion.li
+                      className="flex items-start"
+                      initial={{ opacity: 0, x: -5 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.5 }}
+                    >
+                      <span className="inline-block h-2 w-2 rounded-full bg-meditation-primary mt-2 mr-2"></span>
+                      Find en behagelig position og luk øjnene
+                    </motion.li>
+                    <motion.li
+                      className="flex items-start"
+                      initial={{ opacity: 0, x: -5 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.6 }}
+                    >
+                      <span className="inline-block h-2 w-2 rounded-full bg-meditation-primary mt-2 mr-2"></span>
+                      Tag nogle dybe vejrtrækninger før du begynder
+                    </motion.li>
+                    <motion.li
+                      className="flex items-start"
+                      initial={{ opacity: 0, x: -5 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.7 }}
+                    >
+                      <span className="inline-block h-2 w-2 rounded-full bg-meditation-primary mt-2 mr-2"></span>
+                      Lad tankerne komme og gå uden at dømme dem
+                    </motion.li>
+                  </ul>
+                </motion.div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -235,7 +232,7 @@ export default function PlaybackPage() {
                 duration: 3,
                 ease: 'easeInOut',
                 times: [0, 0.5, 1],
-                repeat: Infinity,
+                repeat: Number.POSITIVE_INFINITY,
                 repeatDelay: 0,
               }}
             />

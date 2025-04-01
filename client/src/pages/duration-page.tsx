@@ -54,7 +54,7 @@ export default function DurationPage() {
 
   return (
     <PageTransition>
-      <div className="space-y-6 ">
+      <div className="space-y-6">
         <motion.div className="flex items-center mb-6" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <Button
             variant="ghost"
@@ -71,7 +71,7 @@ export default function DurationPage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-          <Card className="border-2 border-meditation-primary/10 shadow-sm overflow-hidden ">
+          <Card className="border-2 border-meditation-primary/10 shadow-sm overflow-hidden">
             <CardHeader className="bg-meditation-primary pb-4">
               <CardTitle className="text-2xl text-center text-gray-100 flex justify-center items-center gap-2">
                 <Timer className="h-5 w-5" />
@@ -81,18 +81,18 @@ export default function DurationPage() {
                 Hvor lang tid har du til rådighed for din {type === 'energy' ? 'energi' : 'afslapnings'} session?
               </p>
             </CardHeader>
-            <CardContent className="grid gap-4 p-6 max-h-[calc(100vh-300px)] min-h-[400px] overflow-auto">
+            <CardContent className="p-6 min-h-[450px]">
               {isLoading ? (
                 <div className="flex justify-center p-8">
                   <Loader2 className="h-8 w-8 animate-spin text-meditation-primary" />
                 </div>
               ) : (
-                <motion.div variants={container} initial="hidden" animate="show" className="grid gap-4">
+                <motion.div variants={container} initial="hidden" animate="show" className="grid gap-4 md:grid-cols-3">
                   {folders?.map((folder, index) => (
                     <motion.div key={folder.duration} variants={item} custom={index}>
                       <Button
                         size="lg"
-                        className="w-full h-16 text-lg bg-white text-meditation-primary hover:bg-meditation-primary/10 border-2 border-meditation-primary/80 transition-all duration-300 hover:shadow-md group rounded-xl"
+                        className="w-full h-20 text-lg bg-white text-meditation-primary hover:bg-meditation-primary/10 border-2 border-meditation-primary/80 transition-all duration-300 hover:shadow-md group rounded-xl"
                         onClick={() => setLocation(`/mindspace/sessions/${type}/${folder.duration}`)}
                       >
                         <div className="flex items-center justify-between w-full">

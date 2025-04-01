@@ -27,7 +27,6 @@ function Router() {
       <Switch>
         {/* Public routes */}
         <Route path="/mindspace" component={WelcomePage} />
-        {/* <Route path="/mindspace/login" component={LoginPage} /> */}
         <LayoutRoute layout={AppLayout} path="/mindspace/login" component={LoginPage} />
 
         {/* Protected routes */}
