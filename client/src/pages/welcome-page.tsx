@@ -3,6 +3,7 @@
 import { PageTransition } from '@/components/animation/page-transition';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/lib/auth-context';
 import { motion } from 'framer-motion';
 import { Moon, Shield, Sparkles, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -10,6 +11,8 @@ import { useLocation } from 'wouter';
 
 export default function WelcomePage() {
   const [, setLocation] = useLocation();
+  const { user, isAuthenticated } = useAuth();
+
   const [animate, setAnimate] = useState(false);
 
   useEffect(() => {
@@ -113,12 +116,15 @@ export default function WelcomePage() {
             </Button>
           </motion.div>
 
-          <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.6 }}>
-            <Button variant="link" className="text-meditation-secondary hover:text-meditation-primary" onClick={() => setLocation('/mindspace/admin')}>
-              <Shield className="w-4 h-4 mr-2" />
-              Admin område
-            </Button>
-          </motion.div>
+          {/* Admin Area Button - Only displayed if authenticated */}
+          {isAuthenticated && (
+            <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.6 }}>
+              <Button variant="link" className="text-meditation-secondary hover:text-meditation-primary" onClick={() => setLocation('/mindspace/admin')}>
+                <Shield className="w-4 h-4 mr-2" />
+                Admin område
+              </Button>
+            </motion.div>
+          )}
         </div>
       </div>
     </PageTransition>

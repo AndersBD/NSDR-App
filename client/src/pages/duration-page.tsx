@@ -4,7 +4,7 @@ import { PageTransition } from '@/components/animation/page-transition';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { getDurationFolders } from '@/lib/supabase';
+import { getDurationFoldersByType } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Clock, Loader2, Timer } from 'lucide-react';
@@ -20,8 +20,8 @@ export default function DurationPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['duration-folders'],
-    queryFn: getDurationFolders,
+    queryKey: ['duration-folders', type],
+    queryFn: () => getDurationFoldersByType(type || 'default-type'),
   });
 
   if (error) {

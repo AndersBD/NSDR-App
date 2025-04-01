@@ -4,7 +4,7 @@ import { PageTransition } from '@/components/animation/page-transition';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { getMeditationsByDuration } from '@/lib/supabase';
+import { getMeditationsByTypeAndDuration } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Clock, Loader2, Music } from 'lucide-react';
@@ -20,8 +20,8 @@ export default function SessionListPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ['meditations', duration],
-    queryFn: () => getMeditationsByDuration(`${duration} minutter`),
+    queryKey: ['meditations', type, duration],
+    queryFn: () => getMeditationsByTypeAndDuration(type || 'default-type', `${duration || '0'} minutter`),
   });
 
   if (error) {
