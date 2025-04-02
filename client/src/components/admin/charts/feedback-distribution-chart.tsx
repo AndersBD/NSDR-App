@@ -1,5 +1,7 @@
 'use client';
 
+import { getFeedbackColor } from '@/lib/feedback-utils';
+import { WellbeingOption } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
@@ -7,15 +9,22 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 interface FeedbackDistributionChartProps {
   feedbackData: any[];
   wellbeingLabels: Record<string, string>;
+  wellbeingOptions?: WellbeingOption[];
 }
 
-export function FeedbackDistributionChart({ feedbackData, wellbeingLabels }: FeedbackDistributionChartProps) {
+export function FeedbackDistributionChart({ feedbackData, wellbeingLabels, wellbeingOptions }: FeedbackDistributionChartProps) {
   // Process data for the chart - count occurrences of each wellbeing value
   const chartData = useMemo(() => {
-    const counts: Record<number, number> = { '-2': 0, '-1': 0, '0': 0, '1': 0, '2': 0 };
+    // Create dynamic counts object based on wellbeingLabels
+    const counts: Record<string, number> = {};
+
+    // Initialize all possible values from wellbeingLabels
+    Object.keys(wellbeingLabels).forEach((value) => {
+      counts[value] = 0;
+    });
 
     feedbackData.forEach((item) => {
-      const value = item.wellbeing_change;
+      const value = item.wellbeing_change.toString();
       counts[value] = (counts[value] || 0) + 1;
     });
 
@@ -25,15 +34,6 @@ export function FeedbackDistributionChart({ feedbackData, wellbeingLabels }: Fee
       wellbeingValue: Number.parseInt(value),
     }));
   }, [feedbackData, wellbeingLabels]);
-
-  // Define colors for each wellbeing value with a more calming palette
-  const COLORS = {
-    '-2': '#e57373', // Soft red - very negative
-    '-1': '#ffb74d', // Soft orange - somewhat negative
-    '0': '#90caf9', // Soft blue - neutral
-    '1': '#81c784', // Soft green - somewhat positive
-    '2': '#4a7c66', // Meditation primary - very positive
-  };
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -70,7 +70,7 @@ export function FeedbackDistributionChart({ feedbackData, wellbeingLabels }: Fee
             animationDuration={1000}
           >
             {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[entry.wellbeingValue.toString() as keyof typeof COLORS]} stroke="white" strokeWidth={2} />
+              <Cell key={`cell-${index}`} fill={getFeedbackColor(entry.wellbeingValue, wellbeingOptions)} stroke="white" strokeWidth={2} />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
@@ -80,7 +80,7 @@ export function FeedbackDistributionChart({ feedbackData, wellbeingLabels }: Fee
       <div className="flex flex-wrap justify-center gap-4 mt-4">
         {chartData.map((entry) => (
           <div key={entry.wellbeingValue} className="flex items-center text-xs bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
-            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: COLORS[entry.wellbeingValue.toString() as keyof typeof COLORS] }} />
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: getFeedbackColor(entry.wellbeingValue, wellbeingOptions) }} />
             <span className="text-meditation-secondary">{entry.name}</span>
           </div>
         ))}

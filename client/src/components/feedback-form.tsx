@@ -94,9 +94,7 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, type: 'spring', stiffness: 100 }}>
         <Card className="w-full max-w-lg border-2 border-meditation-primary/20 shadow-lg">
           <CardHeader className="meditation-header rounded-t-lg">
-            <CardTitle className="text-2xl text-center">
-              Hvordan har din mentale trivsel ændret sig efter meditationen sammenlignet med før sessionen?
-            </CardTitle>
+            <CardTitle className="text-2xl text-center">I hvor høj grad føler du dig mere afslpandt eller genopladet efter denne MindSpace-session?</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid gap-4">

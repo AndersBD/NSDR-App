@@ -1,6 +1,7 @@
 'use client';
 
-import type { StorageFile } from '@/lib/supabase';
+import { getFeedbackBarColor, getNearestFeedbackLabel } from '@/lib/feedback-utils';
+import type { StorageFile, WellbeingOption } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -9,9 +10,10 @@ interface MeditationEffectivenessChartProps {
   feedbackData: any[];
   meditationsMap: Record<string, StorageFile | null>;
   wellbeingLabels: Record<string, string>;
+  wellbeingOptions?: WellbeingOption[];
 }
 
-export function MeditationEffectivenessChart({ feedbackData, meditationsMap, wellbeingLabels }: MeditationEffectivenessChartProps) {
+export function MeditationEffectivenessChart({ feedbackData, meditationsMap, wellbeingLabels, wellbeingOptions }: MeditationEffectivenessChartProps) {
   // Process data for the chart - calculate average wellbeing change per meditation
   const chartData = useMemo(() => {
     const meditationStats: Record<
@@ -59,6 +61,17 @@ export function MeditationEffectivenessChart({ feedbackData, meditationsMap, wel
       .sort((a, b) => b.average - a.average); // Sort by effectiveness
   }, [feedbackData, meditationsMap]);
 
+  const getXDomain = () => {
+    if (wellbeingOptions && wellbeingOptions.length > 0) {
+      // Use the range from the available options
+      const values = wellbeingOptions.map((option) => option.value);
+      return [Math.min(...values), Math.max(...values)];
+    }
+
+    // Default domain for the 0-3 scale
+    return [0, 3];
+  };
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -84,19 +97,7 @@ export function MeditationEffectivenessChart({ feedbackData, meditationsMap, wel
 
   // Helper function to get the nearest wellbeing label for a value
   const getWellbeingLabel = (value: number): string => {
-    // Find the closest wellbeing value
-    const wellbeingValues = Object.keys(wellbeingLabels).map(Number);
-    const closestValue = wellbeingValues.reduce((prev, curr) => (Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev));
-
-    return wellbeingLabels[closestValue] || `Value ${value}`;
-  };
-
-  const getBarColor = (value: number) => {
-    if (value <= -1) return '#e57373';
-    if (value < 0) return '#ffb74d';
-    if (value === 0) return '#90caf9';
-    if (value <= 1) return '#81c784';
-    return '#4a7c66';
+    return getNearestFeedbackLabel(value, wellbeingOptions || wellbeingLabels);
   };
 
   return (
@@ -104,12 +105,12 @@ export function MeditationEffectivenessChart({ feedbackData, meditationsMap, wel
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 10, left: 120, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-          <XAxis type="number" domain={[-2, 2]} tickCount={5} tick={{ fill: '#667c73', fontSize: 12 }} />
+          <XAxis type="number" domain={getXDomain()} tickCount={4} tick={{ fill: '#667c73', fontSize: 12 }} />
           <YAxis dataKey="name" type="category" tick={{ fill: '#667c73', fontSize: 12 }} width={120} />
           <Tooltip content={<CustomTooltip />} />
           <Bar dataKey="average" barSize={20} animationDuration={1500} animationBegin={300}>
             {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={getBarColor(entry.average)} radius={4} />
+              <Cell key={`cell-${index}`} fill={getFeedbackBarColor(entry.average, wellbeingOptions)} radius={4} />
             ))}
           </Bar>
         </BarChart>

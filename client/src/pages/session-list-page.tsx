@@ -75,7 +75,7 @@ export default function SessionListPage() {
             <CardHeader className="meditation-header pb-4 rounded-t-md bg-meditation-primary text-white">
               <CardTitle className="text-2xl text-center flex justify-center items-center gap-2">
                 <Music className="h-5 w-5" />
-                Vælg NSDR-session
+                Vælg MindSpace - Session
               </CardTitle>
               <p className="text-center text-white/80 mt-2">Vælg en meditation der passer til dit behov</p>
             </CardHeader>
@@ -95,7 +95,7 @@ export default function SessionListPage() {
                     transition={{ duration: 0.5 }}
                   >
                     <p className="text-meditation-secondary mb-4">Ingen sessioner fundet for den valgte varighed</p>
-                    <Button variant="outline" onClick={() => setLocation(`/mindspace/duration/${type}`)} className="mt-2 meditation-button-outline">
+                    <Button variant="outline" onClick={() => setLocation(`/duration/${type}`)} className="mt-2 meditation-button-outline">
                       Vælg en anden varighed
                     </Button>
                   </motion.div>

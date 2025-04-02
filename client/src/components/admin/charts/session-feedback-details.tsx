@@ -3,7 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { StorageFile } from '@/lib/supabase';
+import { getFeedbackColor, getNearestFeedbackLabel } from '@/lib/feedback-utils';
+import type { StorageFile, WellbeingOption } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { BarChart, Calendar, Clock, Star } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -38,24 +39,8 @@ interface SessionFeedbackDetailsProps {
   feedbackData: FeedbackEntry[];
   meditationsMap: Record<string, StorageFile | null>;
   wellbeingLabels: Record<string, string>;
+  wellbeingOptions?: WellbeingOption[];
 }
-
-// Utility functions - moved outside component for reusability and cleaner code
-const getWellbeingColor = (value: number): string => {
-  // Common color palette function that can be shared across components
-  if (value < 0) {
-    // Negative values: red to orange gradient
-    const intensity = Math.min(1, Math.abs(value) / 2);
-    return `rgba(229, ${115 + 115 * (1 - intensity)}, ${115 + 30 * (1 - intensity)}, 1)`;
-  } else if (value === 0) {
-    // Neutral: blue
-    return '#90caf9';
-  } else {
-    // Positive values: light green to dark green gradient
-    const intensity = Math.min(1, value / 2);
-    return `rgba(${129 - 55 * intensity}, ${199 - 75 * intensity}, ${132 - 60 * intensity}, 1)`;
-  }
-};
 
 const formatDate = (dateStr: string, options?: Intl.DateTimeFormatOptions): string => {
   const date = new Date(dateStr);
@@ -107,7 +92,7 @@ const calculateSessionStats = (
 };
 
 // Function to prepare distribution data for rendering
-const prepareDistributionData = (sessionStats: SessionStats | null, wellbeingLabels: Record<string, string>) => {
+const prepareDistributionData = (sessionStats: SessionStats | null, wellbeingLabels: Record<string, string>, wellbeingOptions?: WellbeingOption[]) => {
   if (!sessionStats) return [];
 
   return Object.keys(wellbeingLabels)
@@ -123,16 +108,16 @@ const prepareDistributionData = (sessionStats: SessionStats | null, wellbeingLab
         count,
         percent,
         label: wellbeingLabels[value] || `Value ${value}`,
-        color: getWellbeingColor(numericValue),
+        color: getFeedbackColor(numericValue, wellbeingOptions),
       };
     });
 };
 
 // Custom tooltip component - extracted for clarity
-const TimelineTooltip = ({ active, payload, label, wellbeingLabels }: any) => {
+const TimelineTooltip = ({ active, payload, label, wellbeingLabels, wellbeingOptions }: any) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
-    const wellbeingLabel = wellbeingLabels[value] || `Value ${value}`;
+    const wellbeingLabel = getNearestFeedbackLabel(value, wellbeingOptions || wellbeingLabels);
 
     return (
       <div className="bg-white p-3 border border-meditation-primary/20 rounded-md shadow-md">
@@ -149,7 +134,7 @@ const TimelineTooltip = ({ active, payload, label, wellbeingLabels }: any) => {
   return null;
 };
 
-export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeingLabels }: SessionFeedbackDetailsProps) {
+export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeingLabels, wellbeingOptions }: SessionFeedbackDetailsProps) {
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -205,7 +190,10 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
   );
 
   // Prepare distribution data for rendering
-  const distributionData = useMemo(() => prepareDistributionData(sessionStats, wellbeingLabels), [sessionStats, wellbeingLabels]);
+  const distributionData = useMemo(
+    () => prepareDistributionData(sessionStats, wellbeingLabels, wellbeingOptions),
+    [sessionStats, wellbeingLabels, wellbeingOptions]
+  );
 
   // Prepare timeline data
   const timelineData = useMemo((): TimelineDataPoint[] => {
@@ -228,11 +216,16 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
 
   // Calculate Y-axis domain based on available wellbeing options
   const getYAxisDomain = useMemo(() => {
+    if (wellbeingOptions && wellbeingOptions.length > 0) {
+      const values = wellbeingOptions.map((option) => option.value);
+      return [Math.min(...values), Math.max(...values)];
+    }
+
     const values = Object.keys(wellbeingLabels).map((val) => Number.parseInt(val));
     const min = Math.min(...values);
     const max = Math.max(...values);
     return [min, max];
-  }, [wellbeingLabels]);
+  }, [wellbeingLabels, wellbeingOptions]);
 
   const formatChartTick = (value: any): string => {
     return formatDate(value);
@@ -379,8 +372,12 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                       <XAxis dataKey="date" tickFormatter={formatChartTick} tick={{ fill: '#667c73', fontSize: 12 }} />
-                      <YAxis domain={getYAxisDomain} tick={{ fill: '#667c73', fontSize: 12 }} tickCount={Object.keys(wellbeingLabels).length} />
-                      <Tooltip content={(props) => <TimelineTooltip {...props} wellbeingLabels={wellbeingLabels} />} />
+                      <YAxis
+                        domain={getYAxisDomain}
+                        tick={{ fill: '#667c73', fontSize: 12 }}
+                        tickCount={wellbeingOptions?.length || Object.keys(wellbeingLabels).length}
+                      />
+                      <Tooltip content={(props) => <TimelineTooltip {...props} wellbeingLabels={wellbeingLabels} wellbeingOptions={wellbeingOptions} />} />
                       <Area
                         type="monotone"
                         dataKey="wellbeing"

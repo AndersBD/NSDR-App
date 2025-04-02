@@ -1,5 +1,7 @@
 'use client';
 
+import { getNearestFeedbackLabel } from '@/lib/feedback-utils';
+import { WellbeingOption } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -7,9 +9,10 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 interface FeedbackTimelineChartProps {
   feedbackData: any[];
   wellbeingLabels: Record<string, string>;
+  wellbeingOptions?: WellbeingOption[];
 }
 
-export function FeedbackTimelineChart({ feedbackData, wellbeingLabels }: FeedbackTimelineChartProps) {
+export function FeedbackTimelineChart({ feedbackData, wellbeingLabels, wellbeingOptions }: FeedbackTimelineChartProps) {
   // Process data for the chart - group by date and calculate average wellbeing change
   const chartData = useMemo(() => {
     const dateGroups: Record<string, { date: string; count: number; total: number }> = {};
@@ -43,25 +46,27 @@ export function FeedbackTimelineChart({ feedbackData, wellbeingLabels }: Feedbac
   };
 
   const getYDomain = () => {
+    if (wellbeingOptions && wellbeingOptions.length > 0) {
+      // Use the range from the available options
+      const values = wellbeingOptions.map((option) => option.value);
+      return [Math.min(...values), Math.max(...values)];
+    }
+
     // Find min and max values in the data
     let minValue = Math.min(...chartData.map((d) => d.average));
     let maxValue = Math.max(...chartData.map((d) => d.average));
 
-    // Ensure min is at least -2 (lowest wellbeing value)
-    minValue = Math.min(minValue, -2);
-    // Ensure max is at least 2 (highest wellbeing value)
-    maxValue = Math.max(maxValue, 2);
+    // Ensure min is at least 0 (lowest wellbeing value in new scale)
+    minValue = Math.min(minValue, 0);
+    // Ensure max is at least 3 (highest wellbeing value in new scale)
+    maxValue = Math.max(maxValue, 3);
 
     return [minValue, maxValue];
   };
 
   // Helper function to get the nearest wellbeing label for a value
   const getWellbeingLabel = (value: number): string => {
-    // Find the closest wellbeing value
-    const wellbeingValues = Object.keys(wellbeingLabels).map(Number);
-    const closestValue = wellbeingValues.reduce((prev, curr) => (Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev));
-
-    return wellbeingLabels[closestValue] || `Value ${value}`;
+    return getNearestFeedbackLabel(value, wellbeingOptions || wellbeingLabels);
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {

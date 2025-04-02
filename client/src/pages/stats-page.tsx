@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { setCachedWellbeingOptions } from '@/lib/feedback-utils';
 import { getClients, getFeedbackStats, getMeditationsForFeedback, getWellbeingOptions } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -34,6 +35,19 @@ export default function StatsPage() {
     queryFn: getClients,
   });
 
+  // Fetch wellbeing options first (for color system)
+  const { data: wellbeingOptions, isLoading: isLoadingOptions } = useQuery({
+    queryKey: ['wellbeing-options'],
+    queryFn: getWellbeingOptions,
+  });
+
+  // Cache wellbeing options for the feedback color system
+  useEffect(() => {
+    if (wellbeingOptions && wellbeingOptions.length > 0) {
+      setCachedWellbeingOptions(wellbeingOptions);
+    }
+  }, [wellbeingOptions]);
+
   // Fetch feedback data with client filter
   const {
     data: feedbackData,
@@ -49,11 +63,6 @@ export default function StatsPage() {
     queryKey: ['meditations-for-feedback', feedbackData],
     queryFn: () => getMeditationsForFeedback(feedbackData || []),
     enabled: !!feedbackData && feedbackData.length > 0,
-  });
-
-  const { data: wellbeingOptions, isLoading: isLoadingOptions } = useQuery({
-    queryKey: ['wellbeing-options'],
-    queryFn: getWellbeingOptions,
   });
 
   const isLoading = isLoadingFeedback || isLoadingMeditations || isLoadingOptions || isLoadingClients;
@@ -268,7 +277,11 @@ export default function StatsPage() {
                           {isLoading ? (
                             <Skeleton className="w-full h-[300px] rounded-md" />
                           ) : (
-                            <FeedbackTimelineChart feedbackData={feedbackData || []} wellbeingLabels={wellbeingLabels} />
+                            <FeedbackTimelineChart
+                              feedbackData={feedbackData || []}
+                              wellbeingLabels={wellbeingLabels}
+                              wellbeingOptions={wellbeingOptions || []}
+                            />
                           )}
                         </CardContent>
                       </Card>
@@ -286,7 +299,11 @@ export default function StatsPage() {
                           {isLoading ? (
                             <Skeleton className="w-full h-[300px] rounded-md" />
                           ) : (
-                            <FeedbackDistributionChart feedbackData={feedbackData || []} wellbeingLabels={wellbeingLabels} />
+                            <FeedbackDistributionChart
+                              feedbackData={feedbackData || []}
+                              wellbeingLabels={wellbeingLabels}
+                              wellbeingOptions={wellbeingOptions || []}
+                            />
                           )}
                         </CardContent>
                       </Card>
@@ -311,6 +328,7 @@ export default function StatsPage() {
                             feedbackData={feedbackData || []}
                             meditationsMap={meditationsMap || {}}
                             wellbeingLabels={wellbeingLabels}
+                            wellbeingOptions={wellbeingOptions || []}
                           />
                         )}
                       </CardContent>
@@ -323,7 +341,12 @@ export default function StatsPage() {
                     {isLoading ? (
                       <Skeleton className="w-full h-[500px] rounded-md" />
                     ) : (
-                      <SessionFeedbackDetails feedbackData={feedbackData || []} meditationsMap={meditationsMap || {}} wellbeingLabels={wellbeingLabels} />
+                      <SessionFeedbackDetails
+                        feedbackData={feedbackData || []}
+                        meditationsMap={meditationsMap || {}}
+                        wellbeingLabels={wellbeingLabels}
+                        wellbeingOptions={wellbeingOptions || []}
+                      />
                     )}
                   </motion.div>
                 )}
