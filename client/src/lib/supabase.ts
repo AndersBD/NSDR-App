@@ -44,7 +44,7 @@ export type Feedback = {
 
 // Get clients
 export async function getClients(): Promise<Client[]> {
-  const { data, error } = await supabase.from('clients').select('*').order('name', { ascending: true });
+  const { data, error } = await supabase.from('clients').select('*').order('client_name', { ascending: true });
 
   if (error) throw error;
   return data || [];

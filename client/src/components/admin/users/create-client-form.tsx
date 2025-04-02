@@ -24,13 +24,69 @@ export function CreateClientForm() {
   }, []);
 
   const generateInviteCode = () => {
-    // Generate a more secure alphanumeric string with 8 characters
-    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed similar looking characters
-    let code = '';
-    for (let i = 0; i < 8; i++) {
-      code += characters.charAt(Math.floor(Math.random() * characters.length));
+    // Define character sets for different parts of the code
+    const alphaUpper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Removed similar looking characters (O/0, I/1)
+    const alphaLower = 'abcdefghijkmnpqrstuvwxyz'; // Removed similar looking characters
+    const numbers = '23456789'; // Removed 0/1 to avoid confusion
+    const specialChars = '-._~'; // URL-safe special characters
+
+    try {
+      // Use crypto API for better randomness if available
+      let code = '';
+
+      // Create a 12-character code with mixed character types
+      // First 4 chars: uppercase
+      for (let i = 0; i < 4; i++) {
+        code += alphaUpper.charAt(Math.floor((crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) * alphaUpper.length));
+      }
+
+      // Add a separator
+      code += '-';
+
+      // Middle 4 chars: numbers and lowercase
+      for (let i = 0; i < 4; i++) {
+        // Alternate between numbers and lowercase
+        const charSet = i % 2 === 0 ? numbers : alphaLower;
+        code += charSet.charAt(Math.floor((crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) * charSet.length));
+      }
+
+      // Add a separator
+      code += '-';
+
+      // Last 4 chars: mix of all
+      const allChars = alphaUpper + alphaLower + numbers;
+      for (let i = 0; i < 4; i++) {
+        code += allChars.charAt(Math.floor((crypto.getRandomValues(new Uint32Array(1))[0] / (0xffffffff + 1)) * allChars.length));
+      }
+
+      setInviteCode(code);
+    } catch (e) {
+      // Fallback to Math.random if crypto API is not available
+      let code = '';
+
+      // Create a 12-character code
+      for (let i = 0; i < 4; i++) {
+        code += alphaUpper.charAt(Math.floor(Math.random() * alphaUpper.length));
+      }
+
+      code += '-';
+
+      // Middle part with lowercase and numbers
+      for (let i = 0; i < 4; i++) {
+        const charSet = i % 2 === 0 ? numbers : alphaLower;
+        code += charSet.charAt(Math.floor(Math.random() * charSet.length));
+      }
+
+      code += '-';
+
+      // Last part with mixed characters
+      const allChars = alphaUpper + alphaLower + numbers;
+      for (let i = 0; i < 4; i++) {
+        code += allChars.charAt(Math.floor(Math.random() * allChars.length));
+      }
+
+      setInviteCode(code);
     }
-    setInviteCode(code);
   };
 
   const copyInviteCode = () => {
