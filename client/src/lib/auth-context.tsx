@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      setLocation('/mindspace/login');
+      setLocation('/login');
     } catch (error: any) {
       console.error('Error logging out:', error.message);
     } finally {

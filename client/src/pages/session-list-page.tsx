@@ -59,7 +59,7 @@ export default function SessionListPage() {
           <Button
             variant="ghost"
             className="text-meditation-primary hover:bg-meditation-primary/10 flex items-center gap-2 pl-2"
-            onClick={() => setLocation(`/mindspace/duration/${type}`)}
+            onClick={() => setLocation(`/duration/${type}`)}
           >
             <ChevronLeft className="w-5 h-5" />
             <span>Tilbage</span>
@@ -105,7 +105,7 @@ export default function SessionListPage() {
                       <motion.div key={meditation.id} variants={item} custom={index}>
                         <Card
                           className="overflow-hidden border border-meditation-primary/10 hover:border-meditation-primary/30 transition-all duration-300 cursor-pointer hover:shadow-md group"
-                          onClick={() => setLocation(`/mindspace/play/${meditation.id}`)}
+                          onClick={() => setLocation(`/play/${meditation.id}`)}
                         >
                           <div className="flex items-center">
                             <div className="w-56 h-32 flex-shrink-0 relative overflow-hidden">

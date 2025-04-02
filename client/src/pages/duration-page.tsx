@@ -59,7 +59,7 @@ export default function DurationPage() {
           <Button
             variant="ghost"
             className="text-meditation-primary hover:bg-meditation-primary/10 flex items-center gap-2 pl-2"
-            onClick={() => setLocation('/mindspace')}
+            onClick={() => setLocation('/')}
           >
             <ChevronLeft className="w-5 h-5" />
             <span>Tilbage</span>
@@ -93,7 +93,7 @@ export default function DurationPage() {
                       <Button
                         size="lg"
                         className="w-full h-20 text-lg bg-white text-meditation-primary hover:bg-meditation-primary/10 border-2 border-meditation-primary/80 transition-all duration-300 hover:shadow-md group rounded-xl"
-                        onClick={() => setLocation(`/mindspace/sessions/${type}/${folder.duration}`)}
+                        onClick={() => setLocation(`/sessions/${type}/${folder.duration}`)}
                       >
                         <div className="flex items-center justify-between w-full">
                           <div className="flex items-center">

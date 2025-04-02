@@ -28,7 +28,7 @@ export default function WelcomePage() {
           <motion.div className="text-center relative p-6" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <div className="absolute inset-0 bg-meditation-primary rounded-lg shadow-lg" />
             <div className="relative z-10 flex flex-col items-center">
-              <img src={`${import.meta.env.BASE_URL}/trustculture-logo.png`} alt="MindSpace Logo" className="h-28 mx-auto mb-2" />
+              <img src={`/trustculture-logo.png`} alt="MindSpace Logo" className="h-28 mx-auto mb-2" />
             </div>
           </motion.div>
 
@@ -94,7 +94,7 @@ export default function WelcomePage() {
             <Button
               size="lg"
               className="w-full h-16 text-lg bg-meditation-primary hover:bg-meditation-primary/80 border-2 border-meditation-primary group transition-all duration-300"
-              onClick={() => setLocation('/mindspace/duration/energy')}
+              onClick={() => setLocation('/duration/energy')}
             >
               <div className="relative flex items-center">
                 <Sun className="w-6 h-6 mr-3 transition-transform duration-300 group-hover:rotate-45" />
@@ -107,7 +107,7 @@ export default function WelcomePage() {
               size="lg"
               variant="outline"
               className="w-full h-16 text-lg border-2 border-meditation-primary text-meditation-primary hover:bg-meditation-primary hover:text-white group transition-all duration-300"
-              onClick={() => setLocation('/mindspace/duration/relaxation')}
+              onClick={() => setLocation('/duration/relaxation')}
             >
               <div className="relative flex items-center">
                 <Moon className="w-6 h-6 mr-3 transition-transform duration-300 group-hover:rotate-12" />
@@ -119,7 +119,7 @@ export default function WelcomePage() {
           {/* Admin Area Button - Only displayed if authenticated */}
           {isAuthenticated && (
             <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.7, delay: 0.6 }}>
-              <Button variant="link" className="text-meditation-secondary hover:text-meditation-primary" onClick={() => setLocation('/mindspace/admin')}>
+              <Button variant="link" className="text-meditation-secondary hover:text-meditation-primary" onClick={() => setLocation('/admin')}>
                 <Shield className="w-4 h-4 mr-2" />
                 Admin område
               </Button>

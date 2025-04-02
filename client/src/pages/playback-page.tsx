@@ -142,7 +142,7 @@ export default function PlaybackPage() {
           <Button
             variant="ghost"
             className="text-meditation-primary hover:bg-meditation-primary/10 flex items-center gap-2 pl-2"
-            onClick={() => setLocation('/mindspace')}
+            onClick={() => setLocation('/')}
           >
             <ChevronLeft className="w-5 h-5" />
             <span>Afbryd session</span>
@@ -270,7 +270,7 @@ export default function PlaybackPage() {
         {/* Transition to welcome page after feedback */}
         {showTransition && (
           <div className="fixed inset-0 z-30 bg-white">
-            <MindfulTransition onComplete={() => setLocation('/mindspace')} />
+            <MindfulTransition onComplete={() => setLocation('/')} />
           </div>
         )}
       </div>

@@ -2,9 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSubmitFeedback } from '@/hooks/use-feedback';
 import { useToast } from '@/hooks/use-toast';
-import { createFeedback, getWellbeingOptions } from '@/lib/supabase';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useClientSession } from '@/lib/client-context';
+import { getWellbeingOptions } from '@/lib/supabase';
+import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -17,6 +19,8 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
   const { toast } = useToast();
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { clientId } = useClientSession();
+  const { mutate: submitFeedback } = useSubmitFeedback();
 
   // Fetch wellbeing options from the database
   const { data: wellbeingOptions, isLoading: isLoadingOptions } = useQuery({
@@ -49,27 +53,33 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
     }
   }, [isSubmitting, onComplete]);
 
-  const feedbackMutation = useMutation({
-    mutationFn: async (wellbeingChange: number) => {
-      return await createFeedback({
-        storage_object_id: storageObjectId,
-        wellbeing_change: wellbeingChange,
-      });
-    },
-    onSuccess: () => {
-      onComplete();
-    },
-    onError: (error: Error) => {
-      console.error('Feedback submission error:', error);
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
-      // Even on error, proceed after a delay
-      setTimeout(() => onComplete(), 1500);
-    },
-  });
+  const handleSubmitFeedback = (wellbeingChange: number) => {
+    setSelectedOption(wellbeingChange);
+    setIsSubmitting(true);
+
+    submitFeedback(
+      {
+        storageObjectId,
+        wellbeingChange,
+        clientId: clientId ?? undefined, // Convert null to undefined
+      },
+      {
+        onSuccess: () => {
+          onComplete();
+        },
+        onError: (error: any) => {
+          console.error('Feedback submission error:', error);
+          toast({
+            title: 'Error',
+            description: error.message,
+            variant: 'destructive',
+          });
+          // Even on error, proceed after a delay
+          setTimeout(() => onComplete(), 1500);
+        },
+      }
+    );
+  };
 
   if (isLoadingOptions) {
     return (
@@ -99,12 +109,7 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
                       ? 'bg-meditation-primary/90 text-white border-meditation-primary hover:bg-meditation-primary/90'
                       : 'border-meditation-primary/80 text-meditation-primary hover:bg-meditation-primary/60'
                   }`}
-                  onClick={() => {
-                    setSelectedOption(option.value);
-                    setIsSubmitting(true);
-                    // Submit feedback immediately after selection
-                    feedbackMutation.mutate(option.value);
-                  }}
+                  onClick={() => handleSubmitFeedback(option.value)}
                   disabled={isSubmitting}
                 >
                   {option.label}

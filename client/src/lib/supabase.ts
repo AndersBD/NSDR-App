@@ -1,3 +1,4 @@
+import { Client } from '@/services/clientService';
 import { Database } from '@/types/supabase';
 import { createClient } from '@supabase/supabase-js';
 import env from './env-config';
@@ -19,7 +20,7 @@ export type StorageFile = {
   audioUrl: string;
   imageUrl: string | null;
   createdAt: string;
-  type?: string; // Add this field
+  type?: string;
 };
 
 export type DurationFolder = {
@@ -40,6 +41,14 @@ export type Feedback = {
   wellbeing_change: number;
   created_at: string;
 };
+
+// Get clients
+export async function getClients(): Promise<Client[]> {
+  const { data, error } = await supabase.from('clients').select('*').order('name', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
 
 // Get duration folders for a specific session type
 export async function getDurationFoldersByType(sessionType: string): Promise<DurationFolder[]> {
@@ -314,103 +323,23 @@ export async function createFeedback(feedback: { storage_object_id: string; well
   return data;
 }
 
-// Helper functions for auth
-export async function signIn(email: string, password: string) {
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-  if (error) throw error;
-}
-
-export async function signUp(email: string, password: string) {
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
-  if (error) throw error;
-}
-
-export async function signOut() {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
-}
-
-// Add new function to get meditation by storage ID
-// export async function getMeditationByStorageId(id: string): Promise<StorageFile | null> {
-//   try {
-//     // Helper function to search for file in a folder
-//     const searchInFolder = async (folderPath: string): Promise<StorageFile | null> => {
-//       const { data: files, error } = await supabase.storage.from('lydfiler-til-nsdr').list(folderPath);
-
-//       if (error) {
-//         console.error(`Error listing files in ${folderPath}:`, error);
-//         return null;
-//       }
-
-//       // Find audio file with matching ID
-//       const audioFile = files.find((f) => f.id === id);
-//       if (!audioFile) return null;
-
-//       const basename = audioFile.name.replace(/\.\w+$/, '');
-
-//       // Get audio URL
-//       const { data: audioData } = await supabase.storage.from('lydfiler-til-nsdr').getPublicUrl(`${folderPath}/${audioFile.name}`);
-
-//       // Look for matching image
-//       const matchingImage = files.find((f) => (f.name.endsWith('.jpg') || f.name.endsWith('.png')) && f.name.startsWith(basename));
-
-//       const imageUrl = matchingImage
-//         ? (await supabase.storage.from('lydfiler-til-nsdr').getPublicUrl(`${folderPath}/${matchingImage.name}`)).data.publicUrl
-//         : null;
-
-//       const duration = parseInt(folderPath.match(/(\d+)/)?.[1] || '0');
-
-//       return {
-//         id: audioFile.id,
-//         name: basename,
-//         duration: duration * 60, // Convert to seconds
-//         audioUrl: audioData.publicUrl,
-//         imageUrl,
-//         createdAt: audioFile.created_at,
-//       };
-//     };
-
-//     // Get root folders
-//     const { data: folders, error: foldersError } = await supabase.storage.from('lydfiler-til-nsdr').list('');
-
-//     if (foldersError) {
-//       console.error('Error getting folders:', foldersError);
-//       throw foldersError;
-//     }
-
-//     // Search through each duration folder
-//     for (const folder of folders) {
-//       if (!folder.name.match(/^\d+\s*minutter$/)) continue;
-
-//       const result = await searchInFolder(folder.name);
-//       if (result) return result;
-//     }
-
-//     console.error('File not found with ID:', id);
-//     return null;
-//   } catch (error: any) {
-//     console.error('Error getting meditation:', error);
-//     throw error;
-//   }
-// }
-
 // Get feedback stats by date range
-export async function getFeedbackStats(timeRange?: 'week' | 'month' | 'year' | 'all') {
+export async function getFeedbackStats(timeRange?: 'week' | 'month' | 'year' | 'all', clientId?: string) {
   let query = supabase.from('feedback').select(`
     id, 
     wellbeing_change,
     created_at,
     storage_object_id,
+    client_id,
     wellbeing_options (
       label
     )
   `);
+
+  // Apply client filtering if specified
+  if (clientId) {
+    query = query.eq('client_id', clientId);
+  }
 
   // Apply date filtering if timeRange is specified
   if (timeRange && timeRange !== 'all') {

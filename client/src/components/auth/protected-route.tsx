@@ -14,7 +14,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       // Redirect to login if not authenticated
-      setLocation(`/mindspace/login?redirect=${encodeURIComponent(location)}`);
+      setLocation(`/login?redirect=${encodeURIComponent(location)}`);
     }
   }, [isAuthenticated, isLoading, location, setLocation]);
 
