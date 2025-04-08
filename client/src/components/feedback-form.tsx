@@ -31,7 +31,7 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
   // Auto-timeout for the feedback form
   useEffect(() => {
     // Auto-timeout after 30 seconds of inactivity
-    const autoTimeoutDuration = 30000;
+    const autoTimeoutDuration = 180000;
     const autoTimeout = setTimeout(() => {
       // Only auto-complete if user hasn't started submitting
       if (!isSubmitting && !selectedOption) {
@@ -89,16 +89,18 @@ export function FeedbackForm({ storageObjectId, onComplete }: FeedbackFormProps)
     );
   }
 
+  const reversedOptions = wellbeingOptions ? [...wellbeingOptions].reverse() : [];
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-white/98 backdrop-blur-md z-[500] transition-all duration-300 p-4">
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, type: 'spring', stiffness: 100 }}>
         <Card className="w-full max-w-lg border-2 border-meditation-primary/20 shadow-lg">
           <CardHeader className="meditation-header rounded-t-lg">
-            <CardTitle className="text-2xl text-center">I hvor høj grad føler du dig mere afslpandt eller genopladet efter denne MindSpace-session?</CardTitle>
+            <CardTitle className="text-2xl text-center">I hvor høj grad føler du dig mere afslappet eller genopladet efter denne MindSpace-session?</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid gap-4">
-              {wellbeingOptions?.map((option) => (
+              {reversedOptions?.map((option) => (
                 <Button
                   key={option.value}
                   variant="outline"
