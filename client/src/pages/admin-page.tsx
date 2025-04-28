@@ -72,7 +72,7 @@ export default function AdminPage() {
           <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-meditation-primary">Dashboard</h2>
-              <Button variant="outline" className="text-meditation-primary hover:bg-meditation-primary/10" onClick={() => setLocation(`/`)}>
+              <Button variant="outline" className="text-meditation-primary hover:bg-meditation-primary/10" onClick={() => setLocation(`/welcome`)}>
                 <Home className="w-4 h-4 mr-2" />
                 Tilbage til forside
               </Button>

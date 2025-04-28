@@ -19,6 +19,7 @@ import env from './lib/env-config';
 import { queryClient } from './lib/queryClient';
 import { validateSession } from './lib/session';
 import AdminPage from './pages/admin-page';
+import LandingPage from './pages/landing-page';
 import LoginPage from './pages/login-page';
 import StatsPage from './pages/stats-page';
 import UsersPage from './pages/users-page';
@@ -59,7 +60,8 @@ function Router() {
       <AnimatePresence mode="wait">
         <Switch>
           {/* Public routes */}
-          <Route path="/" component={WelcomePage} />
+          <Route path="/" component={LandingPage} />
+          <Route path="/welcome" component={WelcomePage} />
           <LayoutRoute layout={AppLayout} path="/login" component={LoginPage} />
 
           {/* Protected routes */}

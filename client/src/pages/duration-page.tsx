@@ -59,7 +59,7 @@ export default function DurationPage() {
           <Button
             variant="ghost"
             className="text-meditation-primary hover:bg-meditation-primary/10 flex items-center gap-2 pl-2"
-            onClick={() => setLocation('/')}
+            onClick={() => setLocation('/welcome')}
           >
             <ChevronLeft className="w-5 h-5" />
             <span>Tilbage</span>
