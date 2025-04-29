@@ -98,7 +98,8 @@ export default function WelcomePage() {
             >
               <div className="relative flex items-center">
                 <Sun className="w-6 h-6 mr-3 transition-transform duration-300 group-hover:rotate-45" />
-                <span>Energi Boost</span>
+                <span className="font-bold">Mind</span>
+                <span>Boost</span>
                 <Sparkles className="w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
             </Button>
@@ -111,7 +112,8 @@ export default function WelcomePage() {
             >
               <div className="relative flex items-center">
                 <Moon className="w-6 h-6 mr-3 transition-transform duration-300 group-hover:rotate-12" />
-                <span>Afslapning</span>
+                <span className="font-bold">Mind</span>
+                <span>Reset</span>
               </div>
             </Button>
           </motion.div>

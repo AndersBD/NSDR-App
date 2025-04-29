@@ -32,7 +32,7 @@ export default function DurationPage() {
     });
   }
 
-  const typeLabel = type === 'energy' ? 'Energi Boost' : 'Afslapning';
+  const typeLabel = type === 'energy' ? 'Mind Boost' : 'Mind Reset';
   const typeIcon = type === 'energy' ? '✨' : '🌙';
 
   // Animation variants
