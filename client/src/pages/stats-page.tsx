@@ -152,8 +152,8 @@ export default function StatsPage() {
           </div>
         </header>
 
-        <main className="container mx-auto px-6 py-8">
-          <div className="max-w-6xl mx-auto space-y-8">
+        <main className="container mx-auto px-6 py-6">
+          <div className="max-w-6xl mx-auto space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-meditation-primary">Mindfulness Statistikker</h2>
               <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ export default function StatsPage() {
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8">
               <Card className="border-2 border-meditation-primary/10 overflow-hidden">
-                <CardHeader className=" border-b border-meditation-primary/10 pb-4 meditation-header rounded-t-md">
+                <CardHeader className=" border-b border-meditation-primary/10 py-4 meditation-header rounded-t-md">
                   <CardTitle className="text-lgflex items-center justify-between">
                     <span>Vælg tidsperiode</span>
                     {selectedClientId !== 'all' && (
@@ -247,7 +247,7 @@ export default function StatsPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="mb-8">
               <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
                 <div className="flex justify-center mb-6">
-                  <TabsList className="grid grid-cols-3 w-full max-w-md">
+                  <TabsList className="grid grid-cols-4 w-full max-w-md">
                     <TabsTrigger value="overview" className="flex items-center gap-2">
                       <Brain className="h-4 w-4" />
                       <span>Overblik</span>
@@ -255,6 +255,10 @@ export default function StatsPage() {
                     <TabsTrigger value="trends" className="flex items-center gap-2">
                       <BarChart3 className="h-4 w-4" />
                       <span>Trends</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="feedback" className="flex items-center gap-2">
+                      <PieChart className="h-4 w-4" />
+                      <span>Feedback</span>
                     </TabsTrigger>
                     <TabsTrigger value="sessions" className="flex items-center gap-2">
                       <PieChart className="h-4 w-4" />
@@ -336,7 +340,7 @@ export default function StatsPage() {
                   </motion.div>
                 )}
 
-                {activeTab === 'sessions' && (
+                {activeTab === 'feedback' && (
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                     {isLoading ? (
                       <Skeleton className="w-full h-[500px] rounded-md" />
@@ -348,6 +352,12 @@ export default function StatsPage() {
                         wellbeingOptions={wellbeingOptions || []}
                       />
                     )}
+                  </motion.div>
+                )}
+
+                {activeTab === 'sessions' && (
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                    <div>Sessions</div>
                   </motion.div>
                 )}
               </Tabs>
