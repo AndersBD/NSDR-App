@@ -3,6 +3,7 @@
 import { FeedbackDistributionChart } from '@/components/admin/charts/feedback-distribution-chart';
 import { FeedbackTimelineChart } from '@/components/admin/charts/feedback-timeline-chart';
 import { MeditationEffectivenessChart } from '@/components/admin/charts/meditation-effectiveness-chart';
+import { SessionEngagementStats } from '@/components/admin/charts/session-engagement-stats';
 import { SessionFeedbackDetails } from '@/components/admin/charts/session-feedback-details';
 import { StatCard } from '@/components/admin/charts/stat-card';
 import { PageTransition } from '@/components/animation/page-transition';
@@ -11,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSessionStats } from '@/hooks/use-session-events';
 import { useToast } from '@/hooks/use-toast';
 import { setCachedWellbeingOptions } from '@/lib/feedback-utils';
 import { getClients, getFeedbackStats, getMeditationsForFeedback, getWellbeingOptions } from '@/lib/supabase';
@@ -65,35 +67,42 @@ export default function StatsPage() {
     enabled: !!feedbackData && feedbackData.length > 0,
   });
 
-  const isLoading = isLoadingFeedback || isLoadingMeditations || isLoadingOptions || isLoadingClients;
+  // Fetch session engagement stats (started, completed)
+  const {
+    data: sessionStatsData,
+    isLoading: isLoadingSessionStats,
+    error: sessionStatsError,
+  } = useSessionStats(selectedClientId !== 'all' ? selectedClientId : undefined);
+
+  const isLoading = isLoadingFeedback || isLoadingMeditations || isLoadingOptions || isLoadingClients || isLoadingSessionStats;
 
   const wellbeingLabels = useMemo(() => {
     if (!wellbeingOptions) return {};
     return Object.fromEntries(wellbeingOptions.map((option) => [option.value, option.label]));
   }, [wellbeingOptions]);
 
-  // Calculate summary statistics
-  const stats = useMemo(() => {
+  // Calculate summary statistics based on feedback
+  const feedbackSummaryStats = useMemo(() => {
     if (!feedbackData) return null;
 
-    const totalSessions = feedbackData.length;
+    const totalFeedbackEntries = feedbackData.length; // This is specific to feedback
     const averageWellbeing =
-      totalSessions > 0 ? Number.parseFloat((feedbackData.reduce((sum, item) => sum + item.wellbeing_change, 0) / totalSessions).toFixed(2)) : 0;
+      totalFeedbackEntries > 0 ? Number.parseFloat((feedbackData.reduce((sum, item) => sum + item.wellbeing_change, 0) / totalFeedbackEntries).toFixed(2)) : 0;
 
     const positiveChanges = feedbackData.filter((item) => item.wellbeing_change > 0).length;
-    const positiveRate = totalSessions > 0 ? Math.round((positiveChanges / totalSessions) * 100) : 0;
+    const positiveRate = totalFeedbackEntries > 0 ? Math.round((positiveChanges / totalFeedbackEntries) * 100) : 0;
 
-    const lastSessionDate = feedbackData.length > 0 ? new Date(feedbackData[feedbackData.length - 1].created_at) : null;
+    const lastFeedbackDate = feedbackData.length > 0 ? new Date(feedbackData[feedbackData.length - 1].created_at) : null;
 
     return {
-      totalSessions,
+      totalFeedbackEntries,
       averageWellbeing,
       positiveRate,
-      lastSessionDate,
+      lastFeedbackDate,
     };
   }, [feedbackData]);
 
-  // Show error toast if data fetching fails
+  // Show error toast if feedback data fetching fails
   useEffect(() => {
     if (feedbackError) {
       toast({
@@ -104,6 +113,18 @@ export default function StatsPage() {
       console.error('Feedback data load error:', feedbackError);
     }
   }, [feedbackError, toast]);
+
+  // Show error toast if session stats fetching fails
+  useEffect(() => {
+    if (sessionStatsError) {
+      toast({
+        title: 'Error Loading Session Stats',
+        description: sessionStatsError.message || 'Could not load session engagement data.',
+        variant: 'destructive',
+      });
+      console.error('Session stats load error:', sessionStatsError);
+    }
+  }, [sessionStatsError, toast]);
 
   const formatDateForDisplay = (date: Date | null) => {
     if (!date) return 'N/A';
@@ -180,9 +201,6 @@ export default function StatsPage() {
                 <CardHeader className=" border-b border-meditation-primary/10 py-4 meditation-header rounded-t-md">
                   <CardTitle className="text-lgflex items-center justify-between">
                     <span>Vælg tidsperiode</span>
-                    {selectedClientId !== 'all' && (
-                      <span className="text-sm font-normal bg-meditation-primary/20 px-3 py-1 rounded-full">{getClientName(selectedClientId)}</span>
-                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
@@ -202,8 +220,8 @@ export default function StatsPage() {
               <motion.div custom={0} variants={fadeInVariants} initial="hidden" animate="visible">
                 <StatCard
                   title="Sessioner"
-                  value={isLoading ? '...' : `${stats?.totalSessions || 0}`}
-                  description="Total antal meditationer"
+                  value={isLoading ? '...' : `${sessionStatsData?.totalStarted || 0}`}
+                  description="Total antal sessioner"
                   icon={<Users className="h-5 w-5 text-meditation-primary" />}
                   isLoading={isLoading}
                   color="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20"
@@ -213,7 +231,7 @@ export default function StatsPage() {
               <motion.div custom={1} variants={fadeInVariants} initial="hidden" animate="visible">
                 <StatCard
                   title="Gennemsnitlig ændring"
-                  value={isLoading ? '...' : `${stats?.averageWellbeing || 0}`}
+                  value={isLoading ? '...' : `${feedbackSummaryStats?.averageWellbeing || 0}`}
                   description="Gennemsnitlig wellness-ændring"
                   icon={<TrendingUp className="h-5 w-5 text-meditation-primary" />}
                   isLoading={isLoading}
@@ -224,8 +242,8 @@ export default function StatsPage() {
               <motion.div custom={2} variants={fadeInVariants} initial="hidden" animate="visible">
                 <StatCard
                   title="Positive resultater"
-                  value={isLoading ? '...' : `${stats?.positiveRate || 0}%`}
-                  description="Sessioner med positiv effekt"
+                  value={isLoading ? '...' : `${feedbackSummaryStats?.positiveRate || 0}%`}
+                  description="Feedback med positiv effekt"
                   icon={<Leaf className="h-5 w-5 text-meditation-primary" />}
                   isLoading={isLoading}
                   color="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20"
@@ -234,9 +252,9 @@ export default function StatsPage() {
 
               <motion.div custom={3} variants={fadeInVariants} initial="hidden" animate="visible">
                 <StatCard
-                  title="Seneste session"
-                  value={isLoading ? '...' : formatDateForDisplay(stats?.lastSessionDate || null)}
-                  description="Dato for seneste meditation"
+                  title="Seneste Feedback"
+                  value={isLoading ? '...' : formatDateForDisplay(feedbackSummaryStats?.lastFeedbackDate || null)}
+                  description="Dato for seneste feedback"
                   icon={<CalendarClock className="h-5 w-5 text-meditation-primary" />}
                   isLoading={isLoading}
                   color="bg-gradient-to-br from-meditation-primary/10 to-meditation-muted/20"
@@ -274,7 +292,7 @@ export default function StatsPage() {
                         <CardHeader className="pb-2 bg-meditation-primary/5 border-b border-meditation-primary/10">
                           <CardTitle className="text-lg text-meditation-primary flex items-center gap-2">
                             <TrendingUp className="h-5 w-5 text-meditation-primary/70" />
-                            Wellness Trend
+                            Wellness Trend (baseret på feedback)
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4">
@@ -321,7 +339,7 @@ export default function StatsPage() {
                       <CardHeader className="pb-2 bg-meditation-primary/5 border-b border-meditation-primary/10">
                         <CardTitle className="text-lg text-meditation-primary flex items-center gap-2">
                           <BarChart3 className="h-5 w-5 text-meditation-primary/70" />
-                          Effektivitet af meditationer
+                          Effektivitet af meditationer (baseret på feedback)
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-4">
@@ -357,7 +375,7 @@ export default function StatsPage() {
 
                 {activeTab === 'sessions' && (
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                    <div>Sessions</div>
+                    <SessionEngagementStats sessionStatsData={sessionStatsData} isLoading={isLoadingSessionStats} />
                   </motion.div>
                 )}
               </Tabs>
