@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSessionStats } from '@/hooks/use-session-events';
+import { useDetailedSessionEngagementStats, useSessionStats } from '@/hooks/use-session-events';
 import { useToast } from '@/hooks/use-toast';
 import { setCachedWellbeingOptions } from '@/lib/feedback-utils';
 import { getClients, getFeedbackStats, getMeditationsForFeedback, getWellbeingOptions } from '@/lib/supabase';
@@ -67,14 +67,21 @@ export default function StatsPage() {
     enabled: !!feedbackData && feedbackData.length > 0,
   });
 
-  // Fetch session engagement stats (started, completed)
+  // Fetch session engagement stats (overall summary)
   const {
     data: sessionStatsData,
     isLoading: isLoadingSessionStats,
     error: sessionStatsError,
   } = useSessionStats(selectedClientId !== 'all' ? selectedClientId : undefined);
 
-  const isLoading = isLoadingFeedback || isLoadingMeditations || isLoadingOptions || isLoadingClients || isLoadingSessionStats;
+  // Fetch detailed session engagement stats
+  const {
+    data: detailedSessionStatsData,
+    isLoading: isLoadingDetailedSessionStats,
+    error: detailedSessionStatsError,
+  } = useDetailedSessionEngagementStats(selectedClientId !== 'all' ? selectedClientId : undefined);
+
+  const isLoading = isLoadingFeedback || isLoadingMeditations || isLoadingOptions || isLoadingClients || isLoadingSessionStats || isLoadingDetailedSessionStats;
 
   const wellbeingLabels = useMemo(() => {
     if (!wellbeingOptions) return {};
@@ -125,6 +132,18 @@ export default function StatsPage() {
       console.error('Session stats load error:', sessionStatsError);
     }
   }, [sessionStatsError, toast]);
+
+  // Show error toast if detailed session stats fetching fails
+  useEffect(() => {
+    if (detailedSessionStatsError) {
+      toast({
+        title: 'Error Loading Detailed Session Data',
+        description: detailedSessionStatsError.message || 'Could not load detailed session engagement data.',
+        variant: 'destructive',
+      });
+      console.error('Detailed session stats load error:', detailedSessionStatsError);
+    }
+  }, [detailedSessionStatsError, toast]);
 
   const formatDateForDisplay = (date: Date | null) => {
     if (!date) return 'N/A';
@@ -375,7 +394,12 @@ export default function StatsPage() {
 
                 {activeTab === 'sessions' && (
                   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                    <SessionEngagementStats sessionStatsData={sessionStatsData} isLoading={isLoadingSessionStats} />
+                    <SessionEngagementStats
+                      overallStatsData={sessionStatsData}
+                      isLoadingOverallStats={isLoadingSessionStats}
+                      detailedStatsData={detailedSessionStatsData}
+                      isLoadingDetailedStats={isLoadingDetailedSessionStats}
+                    />
                   </motion.div>
                 )}
               </Tabs>

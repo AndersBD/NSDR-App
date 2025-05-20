@@ -13,7 +13,7 @@ import { getMeditationByStorageId } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Sparkles } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'wouter';
 
 export default function PlaybackPage() {
@@ -47,7 +47,7 @@ export default function PlaybackPage() {
   });
 
   // Handle ending of audio playback
-  const handleEnded = () => {
+  const handleEnded = useCallback(() => {
     if (!hasEndedRef.current) {
       hasEndedRef.current = true;
       setIsPlaying(false);
@@ -64,7 +64,7 @@ export default function PlaybackPage() {
           },
         });
       } else if (!currentSessionEventId) {
-        console.warn('Cannot log session completion: currentSessionEventId is null.');
+        console.warn('Cannot log session completion on audio end: currentSessionEventId is null.');
       }
 
       setShowEndingBreath(true);
@@ -76,7 +76,13 @@ export default function PlaybackPage() {
         setShowFeedback(true);
       }, 3000);
     }
-  };
+  }, [
+    currentSessionEventId,
+    completeSession,
+    toast,
+    // setShowEndingBreath, setShowFeedback, setIsPlaying are stable state setters
+    // audioRef, hasEndedRef, sessionCompletedRef are stable refs
+  ]);
 
   // Check to ensure audio doesn't play when feedback is showing
   useEffect(() => {
@@ -99,7 +105,7 @@ export default function PlaybackPage() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handlePlay = () => {
+    const handlePlayEvent = () => {
       setIsPlaying(true);
       if (!sessionStartedRef.current && meditation?.id) {
         startSession(
@@ -114,18 +120,18 @@ export default function PlaybackPage() {
       }
     };
 
-    const handlePause = () => {
+    const handlePauseEvent = () => {
       setIsPlaying(false);
     };
 
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('play', handlePlayEvent);
+    audio.addEventListener('pause', handlePauseEvent);
 
     return () => {
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('play', handlePlayEvent);
+      audio.removeEventListener('pause', handlePauseEvent);
     };
-  }, [audioRef, meditation, clientId, startSession, toast]);
+  }, [audioRef, meditation, clientId, startSession, toast, setIsPlaying, setCurrentSessionEventId]);
 
   // Reset session state refs if meditation ID changes
   useEffect(() => {
