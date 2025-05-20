@@ -20,56 +20,32 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
   const [isMuted, setIsMuted] = useState(false);
 
   // Refs
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const localAudioRef = useRef<HTMLAudioElement>(null);
   const endTriggeredRef = useRef(false);
 
   // Sync the forwarded ref with our local ref
   useEffect(() => {
     if (!ref) return;
     if (typeof ref === 'function') {
-      ref(audioRef.current);
+      ref(localAudioRef.current);
     } else {
-      ref.current = audioRef.current;
+      ref.current = localAudioRef.current;
     }
   }, [ref]);
 
-  // Handle audio ending - with safeguards
-  const handleAudioEnd = useCallback(() => {
-    // Prevent multiple triggers
-    if (!endTriggeredRef.current && onEnded) {
-      endTriggeredRef.current = true;
-
-      // Reset player state
-      setIsPlaying(false);
-
-      // Call the onEnded callback
-      onEnded();
-    }
-  }, [onEnded]);
-
+  // Main effect for audio event listeners and autoplay
   useEffect(() => {
-    const audio = audioRef.current;
+    const audio = localAudioRef.current;
     if (!audio) return;
 
-    // 1. Setup time update handler
-    // This will check if the current time has reached the duration
     const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
-
-      // Only check if we have valid duration and we're playing
+      // Fallback end detection (if 'ended' event fails)
       if (!audio.paused && audio.duration > 0 && audio.currentTime > 0) {
-        // Simple check: has current time reached or exceeded duration?
-        if (audio.currentTime >= audio.duration && !endTriggeredRef.current) {
+        if (audio.currentTime >= audio.duration - 0.1 && !endTriggeredRef.current) {
           endTriggeredRef.current = true;
-
-          // Force display to show full duration for visual consistency
           setCurrentTime(audio.duration);
-
-          // Pause playback
           audio.pause();
-          setIsPlaying(false);
-
-          // Call onEnded callback
           if (onEnded) {
             onEnded();
           }
@@ -77,82 +53,75 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
       }
     };
 
-    // 2. Setup play/pause state syncing
-    const syncPlayState = () => setIsPlaying(!audio.paused);
+    const syncPlayState = () => {
+      setIsPlaying(!audio.paused);
+    };
 
-    // 3. Setup ended handler with improved behavior
-    const handleEnded = () => {
+    const handleActualEndedEvent = () => {
       if (!endTriggeredRef.current) {
         endTriggeredRef.current = true;
         setIsPlaying(false);
-
-        // Set current time to full duration instead of 0
         if (audio.duration) {
           setCurrentTime(audio.duration);
         }
-
         if (onEnded) {
           onEnded();
         }
       }
     };
 
-    // Add event listeners
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('play', syncPlayState);
     audio.addEventListener('pause', syncPlayState);
-    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('ended', handleActualEndedEvent);
 
-    // Set initial volume
     audio.volume = isMuted ? 0 : volume;
 
-    // Handle autoplay
-    if (autoPlay && !endTriggeredRef.current) {
+    if (autoPlay && !audio.played.length && !endTriggeredRef.current) {
       audio.play().catch((err) => {
         console.log('Autoplay prevented by browser:', err);
         setIsPlaying(false);
       });
     }
 
-    // Cleanup function
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('play', syncPlayState);
       audio.removeEventListener('pause', syncPlayState);
-      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('ended', handleActualEndedEvent);
     };
-  }, [autoPlay, handleAudioEnd, volume, isMuted, onEnded]);
+  }, [autoPlay, volume, isMuted, onEnded]);
 
-  // Update volume when volume or mute state changes
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
+    if (localAudioRef.current) {
+      localAudioRef.current.volume = isMuted ? 0 : volume;
     }
   }, [volume, isMuted]);
 
-  // Player control handlers
   const togglePlay = useCallback(() => {
-    if (!audioRef.current) return;
+    const audio = localAudioRef.current;
+    if (!audio) return;
 
-    if (isPlaying) {
-      audioRef.current.pause();
+    if (audio.paused) {
+      audio.play().catch((err) => {
+        console.error('Error attempting to play audio:', err);
+      });
     } else {
-      audioRef.current.play().catch((err) => console.log('Play prevented:', err));
+      audio.pause();
     }
-  }, [isPlaying]);
+  }, []);
 
   const handleSeek = useCallback((value: number[]) => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = value[0];
+    const audio = localAudioRef.current;
+    if (!audio) return;
+    audio.currentTime = value[0];
     setCurrentTime(value[0]);
   }, []);
 
   const stopPlayback = useCallback(() => {
-    if (!audioRef.current) return;
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-    setCurrentTime(0);
-    setIsPlaying(false);
+    const audio = localAudioRef.current;
+    if (!audio) return;
+    audio.pause();
   }, []);
 
   const toggleMute = useCallback(() => {
@@ -184,7 +153,7 @@ export const AudioPlayer = forwardRef<HTMLAudioElement, AudioPlayerProps>(functi
 
   return (
     <div className="">
-      <audio ref={audioRef} src={meditation.audioUrl} preload="metadata" autoPlay={autoPlay} />
+      <audio ref={localAudioRef} src={meditation.audioUrl} preload="metadata" />
 
       <div className="aspect-video bg-meditation-primary/5 rounded-xl overflow-hidden mb-4 shadow-md h-auto w-full">
         {meditation.imageUrl ? (

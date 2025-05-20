@@ -6,12 +6,14 @@ import { FeedbackForm } from '@/components/feedback-form';
 import { MindfulTransition } from '@/components/mindful-transition';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCompleteSession, useStartSession } from '@/hooks/use-session-events';
 import { useToast } from '@/hooks/use-toast';
+import { useClientSession } from '@/lib/client-context';
 import { getMeditationByStorageId } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Sparkles } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'wouter';
 
 export default function PlaybackPage() {
@@ -27,6 +29,13 @@ export default function PlaybackPage() {
   // Flag to prevent multiple triggers
   const hasEndedRef = useRef(false);
 
+  const { clientId } = useClientSession();
+  const { mutate: startSession } = useStartSession();
+  const { mutate: completeSession } = useCompleteSession();
+  const [currentSessionEventId, setCurrentSessionEventId] = useState<number | null>(null);
+  const sessionStartedRef = useRef(false);
+  const sessionCompletedRef = useRef(false);
+
   const {
     data: meditation,
     isLoading,
@@ -38,21 +47,27 @@ export default function PlaybackPage() {
   });
 
   // Handle ending of audio playback
-  const handleEnded = () => {
-    // Only run this once
+  const handleEnded = useCallback(() => {
     if (!hasEndedRef.current) {
       hasEndedRef.current = true;
       setIsPlaying(false);
 
-      // Stop the audio
       if (audioRef.current) {
         audioRef.current.pause();
       }
 
-      // Show breathing animation first
-      setShowEndingBreath(true);
+      // Log session completion
+      if (currentSessionEventId && !sessionCompletedRef.current) {
+        completeSession(currentSessionEventId, {
+          onSuccess: () => {
+            sessionCompletedRef.current = true;
+          },
+        });
+      } else if (!currentSessionEventId) {
+        console.warn('Cannot log session completion on audio end: currentSessionEventId is null.');
+      }
 
-      // Then show feedback form after animation
+      setShowEndingBreath(true);
       setTimeout(() => {
         setShowEndingBreath(false);
         if (audioRef.current) {
@@ -61,7 +76,13 @@ export default function PlaybackPage() {
         setShowFeedback(true);
       }, 3000);
     }
-  };
+  }, [
+    currentSessionEventId,
+    completeSession,
+    toast,
+    // setShowEndingBreath, setShowFeedback, setIsPlaying are stable state setters
+    // audioRef, hasEndedRef, sessionCompletedRef are stable refs
+  ]);
 
   // Check to ensure audio doesn't play when feedback is showing
   useEffect(() => {
@@ -79,21 +100,45 @@ export default function PlaybackPage() {
     }
   }, [showFeedback]);
 
-  // Track audio play state
+  // Track audio play state and log session start
   useEffect(() => {
-    const handlePlay = () => setIsPlaying(true);
-    const handlePause = () => setIsPlaying(false);
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    if (audioRef.current) {
-      audioRef.current.addEventListener('play', handlePlay);
-      audioRef.current.addEventListener('pause', handlePause);
+    const handlePlayEvent = () => {
+      setIsPlaying(true);
+      if (!sessionStartedRef.current && meditation?.id) {
+        startSession(
+          { storageObjectId: meditation.id, clientId },
+          {
+            onSuccess: (data) => {
+              setCurrentSessionEventId(data.id);
+              sessionStartedRef.current = true;
+            },
+          }
+        );
+      }
+    };
 
-      return () => {
-        audioRef.current?.removeEventListener('play', handlePlay);
-        audioRef.current?.removeEventListener('pause', handlePause);
-      };
-    }
-  }, [audioRef.current]);
+    const handlePauseEvent = () => {
+      setIsPlaying(false);
+    };
+
+    audio.addEventListener('play', handlePlayEvent);
+    audio.addEventListener('pause', handlePauseEvent);
+
+    return () => {
+      audio.removeEventListener('play', handlePlayEvent);
+      audio.removeEventListener('pause', handlePauseEvent);
+    };
+  }, [audioRef, meditation, clientId, startSession, toast, setIsPlaying, setCurrentSessionEventId]);
+
+  // Reset session state refs if meditation ID changes
+  useEffect(() => {
+    sessionStartedRef.current = false;
+    sessionCompletedRef.current = false;
+    setCurrentSessionEventId(null);
+  }, [meditation?.id]);
 
   if (error) {
     toast({
@@ -247,19 +292,16 @@ export default function PlaybackPage() {
           </div>
         )}
 
-        {/* Feedback form - using a div instead of AnimatedContent to ensure it's rendered */}
-        {showFeedback && (
+        {/* Feedback form - no longer needs currentSessionEventId */}
+        {showFeedback && meditation && (
           <FeedbackForm
             storageObjectId={meditation.id}
             onComplete={() => {
               setShowTransition(true);
-
-              // Ensure audio is completely stopped
               if (audioRef.current) {
                 audioRef.current.pause();
                 audioRef.current.currentTime = 0;
               }
-
               setTimeout(() => {
                 setShowFeedback(false);
               }, 100);

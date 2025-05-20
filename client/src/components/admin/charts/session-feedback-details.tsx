@@ -301,7 +301,7 @@ export function SessionFeedbackDetails({ feedbackData, meditationsMap, wellbeing
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-xs text-meditation-secondary">Antal Sessioner</p>
+                    <p className="text-xs text-meditation-secondary">Antal Feedback</p>
                     <p className="text-xl font-semibold text-meditation-primary mt-1">{sessionStats.total}</p>
                   </div>
                   <BarChart className="h-5 w-5 text-meditation-primary opacity-70" />
